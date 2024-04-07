@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:minWidth="300dp"
+    android:orientation="vertical"
+    android:background="@drawable/curved_background"
+
+    android:backgroundTint="@color/content_background"
+    tools:context=".AddNote">
+        <!-- TODO: Update blank fragment layout -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:letterSpacing="0.2"
+            android:layout_gravity="center_horizontal"
+            android:text="Add A Note" />
+        <!--com.google.android.material.textfield.TextInputLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:layout_marginRight="50dp"
+                android:hint="write note title"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>
+
+
+        </com.google.android.material.textfield.TextInputLayout-->
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/link_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_marginRight="30dp"
+                android:hint="Paste Link"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/note_desc_inputlayout"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/note_desc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_marginRight="30dp"
+                android:gravity="top|start"
+                android:inputType="textMultiLine"
+                android:lines="8"
+                android:hint="Enter Description"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/save_note_btn"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/curved_button"
+            android:backgroundTint="@color/black"
+            android:layout_height="wrap_content"
+            android:elevation="100dp"
+            android:shadowDy="50"
+            android:shadowDx="50"
+            android:shadowRadius="0.5"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:layout_marginBottom="50dp"
+            android:text="Save Note"/>
+    </LinearLayout>

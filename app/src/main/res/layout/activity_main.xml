@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--androidx.constraintlayout.widget.ConstraintLayout-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/main_appbar"
+        android:fitsSystemWindows="true"
+        android:layout_width="match_parent"
+        android:background="@color/black"
+        tools:ignore="MissingConstraints"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            android:elevation="100dp"
+            app:subtitle="save and retrieve yo memories"
+            app:subtitleTextColor="#5DADEA"
+            app:title="SmartBokx"
+
+            app:titleTextColor="@color/white">
+            <LinearLayout
+                android:layout_gravity="right"
+                android:layout_width="wrap_content"
+                android:orientation="vertical"
+                android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/clipboard_service_cmd"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                android:textSize="10dp"
+
+                android:layout_width="wrap_content"
+                android:text="@string/clipboard_service_start_text"/>
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/toggle_clipboard_service_btn"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-condensed-medium"
+                android:textColor="@color/white"
+                android:elevation="50dp"
+                android:onClick="startClipboardService"
+                android:text=""
+                android:layout_gravity="right"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/round_btn"
+                android:layout_width="32dp"
+                android:layout_height="31dp" />
+            </LinearLayout>
+        </com.google.android.material.appbar.MaterialToolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+    <TextView
+
+        android:layout_width="match_parent"
+        android:textColor="@color/white"
+        android:letterSpacing="0.5"
+        android:layout_height="wrap_content"
+        android:background="#3A3636"
+        android:text="Instant Memory Access"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@drawable/main_scafold">
+        <com.google.android.material.tabs.TabLayout
+            android:elevation="50dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <com.google.android.material.tabs.TabItem
+                android:text="Notes Today"
+                android:icon="@android:drawable/ic_menu_today"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <com.google.android.material.tabs.TabItem
+                android:text="Find Notes"
+                android:icon="@android:drawable/ic_menu_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.tabs.TabLayout>
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/add_note_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="16dp"
+
+            android:contentDescription="add new note"
+            app:srcCompat="@android:drawable/ic_input_add"/>
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/tab_view_space"
+            android:background="#E3E0E0"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </LinearLayout>
+
+</LinearLayout>

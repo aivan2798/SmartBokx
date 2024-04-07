@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:background="#D9D5EC"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:id="@+id/note_summary_layout"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/note_title"
+            android:text="NOTE TITLE"
+            android:textSize="24dp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:shadowColor="@color/black"
+            android:shadowDx="5"
+            android:shadowDy="5"
+            android:shadowRadius="10"
+            android:layout_marginLeft="10dp"
+            android:fontFamily="sans-serif-condensed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <TextView
+            android:id="@+id/note_hint"
+            android:text="note hint"
+            android:textSize="22dp"
+            android:textColor="#6A5353"
+            android:textStyle="bold"
+
+            android:layout_marginLeft="10dp"
+            android:fontFamily="sans-serif-condensed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+    <androidx.appcompat.widget.AppCompatButton
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:backgroundTint="@color/black"
+        app:layout_constraintEnd_toEndOf="@id/note_summary_layout"
+        android:background="@android:drawable/ic_menu_info_details"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
