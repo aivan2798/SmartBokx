@@ -70,6 +70,7 @@
         android:orientation="vertical"
         android:background="@drawable/main_scafold">
         <com.google.android.material.tabs.TabLayout
+            android:id="@+id/main_tablayout"
             android:elevation="50dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -82,6 +83,11 @@
             <com.google.android.material.tabs.TabItem
                 android:text="Find Notes"
                 android:icon="@android:drawable/ic_menu_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <com.google.android.material.tabs.TabItem
+                android:text="Test Model"
+                android:icon="@android:drawable/ic_menu_edit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         </com.google.android.material.tabs.TabLayout>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.TestModel">
+
+    <!-- TODO: Update blank fragment layout -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Testing Model" />
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/model_context_inputlayout"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/model_context"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:gravity="top|start"
+            android:inputType="textMultiLine"
+            android:lines="8"
+            android:hint="Enter Context Test"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+    <!--com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:minHeight="100dp"
+
+        android:layout_height="wrap_content">
+    </com.google.android.material.textfield.TextInputLayout-->
+    <EditText
+        android:id="@+id/query_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_marginRight="30dp"
+        android:gravity="top|start"
+        android:hint="Enter Query Text"
+        />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/ask_model_btn"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/curved_button"
+        android:backgroundTint="@color/black"
+        android:layout_height="wrap_content"
+        android:elevation="100dp"
+        android:shadowDy="50"
+        android:shadowDx="50"
+        android:shadowRadius="0.5"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:layout_marginBottom="50dp"
+        android:text="ASK QUESTION"/>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/answer_text"
+            android:layout_width="match_parent"
+            android:text="answer here"
+            android:layout_height="wrap_content"/>
+    </ScrollView>
+
+</LinearLayout>

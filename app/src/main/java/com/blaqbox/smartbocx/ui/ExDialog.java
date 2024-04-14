@@ -20,6 +20,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.DialogFragment;
 
 import com.blaqbox.smartbocx.R;
+import com.blaqbox.smartbocx.db.DBHandler;
 import com.google.android.material.textfield.TextInputEditText;
 
 /**
@@ -30,12 +31,15 @@ public class ExDialog extends DialogFragment {
     TextInputEditText note_desc;
 
     AppCompatButton save_note_btn;
+
+    DBHandler db_handler;
     @Nullable
     @Override
 
 
     public View onCreateView(LayoutInflater layout_inflator, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
+        db_handler = new DBHandler(this.getContext());
         View dialog_view = layout_inflator.inflate(R.layout.fragment_add_note,container,false);
         link_text = dialog_view.findViewById(R.id.link_text);
         note_desc = dialog_view.findViewById(R.id.note_desc);
@@ -58,5 +62,7 @@ public class ExDialog extends DialogFragment {
 
         String link_description = note_desc.getText().toString();
         Toast.makeText(this.getContext(), "Note Saved: "+link+"\n\n"+link_description, Toast.LENGTH_SHORT).show();
+        db_handler.addNewNote("Link Note",link,link_description);
+
     }
 }
