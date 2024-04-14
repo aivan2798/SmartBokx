@@ -160,5 +160,6 @@ public class MainActivity extends AppCompatActivity {
     public void showAddNoteView(View vw)
     {
         exDialog.show(fragment_manager," test");
+        viewpager.invalidate();
     }
 }

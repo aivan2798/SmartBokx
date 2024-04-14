@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,8 +80,8 @@ private static final String TRACKS_COL = "tracks";
 
         // after adding all values we are passing
         // content values to our table.
-        db.insert(TABLE_NAME, null, values);
-
+        long row_id = db.insert(TABLE_NAME, null, values);
+        Log.i("added row_id","Row: "+row_id);
         // at last we are closing our
         // database after adding database.
         db.close();
@@ -96,9 +97,12 @@ private static final String TRACKS_COL = "tracks";
                 String link_txt = cursor.getString(2);
                 String link_decription = cursor.getString(3);
                 notes_list.add(new Note(link_txt,link_txt,link_decription));
+
+                Log.i("link text", link_txt);
                 // get  the  data into array,or class variable
             } while (cursor.moveToNext());
         }
+        db.close();
         return notes_list;
     }
 
@@ -108,5 +112,7 @@ private static final String TRACKS_COL = "tracks";
         // this method is called to check if the table exists already.
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
+
+
     }
 }
