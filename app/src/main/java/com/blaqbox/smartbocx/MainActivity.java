@@ -4,22 +4,39 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatToggleButton;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.RemoteInput;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
 
+import com.blaqbox.smartbocx.backroom.DataConnector;
+import com.blaqbox.smartbocx.backroom.NoteReceiver;
+import com.blaqbox.smartbocx.db.DBHandler;
+import com.blaqbox.smartbocx.db.Note;
 import com.blaqbox.smartbocx.ui.ExDialog;
+import com.blaqbox.smartbocx.utils.Notifier;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -34,9 +51,16 @@ import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity {
+    Notifier notifier;
+
+    //List<Note> all_notes;
+    DataConnector master_dbHandler;
+    TabAdapter tab_adapter;
     public boolean clipboard_service_state = false;
     ViewPager2 viewpager;
     View notes_list;
@@ -47,10 +71,16 @@ public class MainActivity extends AppCompatActivity {
 
     TabLayout main_tablayout;
 
+    NotificationManager notes_notification_manager = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //all_notes = new ArrayList<Note>();
+        master_dbHandler = DataConnector.getInstance(getApplicationContext());
+        notifier = new Notifier();
         setContentView(R.layout.activity_main);
+
+
         viewpager = findViewById(R.id.tab_view_space);
         addnote_fab = findViewById(R.id.add_note_fab);
         main_tablayout = findViewById(R.id.main_tablayout);
@@ -79,8 +109,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-        viewpager.setAdapter(new TabAdapter(this));
+        tab_adapter = new TabAdapter(this);//, master_dbHandler);
+        viewpager.setAdapter(tab_adapter);
         viewpager.registerOnPageChangeCallback(
                 new ViewPager2.OnPageChangeCallback(){
                     @Override
@@ -137,21 +167,28 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void setClipboard_service_state(View parent_view)
+
+
+
+    public void startClipboardService(View parent_view)
     {
 
         AppCompatButton parent_btn = (AppCompatButton) parent_view;
+        int new_size = master_dbHandler.refresh();
 
+        Log.i("New Size: ", "updated size is "+new_size);
+        //main_tablayout.destroyDrawingCache();
+        /*notifier.showNewNoteNotification(getApplicationContext(),notes_notification_manager,"New Note","New Notification");*/
         if(clipboard_service_state == false) {
-            Toast.makeText(this, "Clipboard Service Started", Toast.LENGTH_LONG).show();
 
-            parent_btn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.clipboard_btn_off_state)));
 
+            ///parent_btn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.clipboard_btn_off_state)));
+            Toast.makeText(this, "Refreshed Data", Toast.LENGTH_LONG).show();
         }
         else
         {
-            parent_btn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.clipboard_btn_on_state)));
-            Toast.makeText(this, "Clipboard Service Stoped", Toast.LENGTH_LONG).show();
+            ///parent_btn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.clipboard_btn_on_state)));
+            Toast.makeText(this, "Refreshed Data", Toast.LENGTH_LONG).show();
         }
 
         clipboard_service_state = !clipboard_service_state;

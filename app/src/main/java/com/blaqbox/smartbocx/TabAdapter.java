@@ -7,14 +7,18 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+import com.blaqbox.smartbocx.db.DBHandler;
 import com.blaqbox.smartbocx.ui.FindNotes;
 import com.blaqbox.smartbocx.ui.NotesToday;
 import com.blaqbox.smartbocx.ui.TestModel;
 
 public class TabAdapter extends FragmentStateAdapter{
 
-    public TabAdapter(FragmentActivity activity) {
+    //DBHandler db_handler;
+    public TabAdapter(FragmentActivity activity)//, DBHandler active_dbHandler)
+    {
         super(activity);
+        //db_handler = active_dbHandler;
     }
     @Override
     public Fragment createFragment(int position)

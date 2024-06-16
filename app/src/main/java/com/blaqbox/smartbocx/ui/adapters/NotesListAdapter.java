@@ -48,4 +48,10 @@ public class NotesListAdapter extends RecyclerView.Adapter<NotesListViewHolder>
         return all_notes.size();
     }
 
+    //@Override
+    public Note getItem(int position)
+    {
+        return all_notes.get(position);
+    }
+
 }

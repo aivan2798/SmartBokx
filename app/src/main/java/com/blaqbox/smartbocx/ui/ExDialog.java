@@ -20,6 +20,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.DialogFragment;
 
 import com.blaqbox.smartbocx.R;
+import com.blaqbox.smartbocx.backroom.DataConnector;
 import com.blaqbox.smartbocx.db.DBHandler;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -32,14 +33,15 @@ public class ExDialog extends DialogFragment {
 
     AppCompatButton save_note_btn;
 
-    DBHandler db_handler;
+    DataConnector db_handler;
     @Nullable
     @Override
 
 
     public View onCreateView(LayoutInflater layout_inflator, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        db_handler = new DBHandler(this.getContext());
+        db_handler = DataConnector.getInstance();
+                //new DBHandler(this.getContext());
         View dialog_view = layout_inflator.inflate(R.layout.fragment_add_note,container,false);
         link_text = dialog_view.findViewById(R.id.link_text);
         note_desc = dialog_view.findViewById(R.id.note_desc);

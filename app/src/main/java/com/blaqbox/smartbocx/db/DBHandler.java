@@ -7,7 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.blaqbox.smartbocx.ui.NotesToday;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DBHandler extends SQLiteOpenHelper {
@@ -16,6 +19,7 @@ public class DBHandler extends SQLiteOpenHelper {
     // below variable is for our database name.
     private static final String DB_NAME = "Notes_db";
 
+    public List<Note> notes_list;
     // below int is our database version
     private static final int DB_VERSION = 1;
 
@@ -38,8 +42,10 @@ public class DBHandler extends SQLiteOpenHelper {
 private static final String TRACKS_COL = "tracks";
 
     // creating a constructor for our database handler.
-    public DBHandler(Context context) {
+    public DBHandler(Context context, List<Note> current_notes)
+    {
         super(context, DB_NAME, null, DB_VERSION);
+        this.notes_list = current_notes;
     }
 
     // below method is for creating a database by running a sqlite query
@@ -85,24 +91,31 @@ private static final String TRACKS_COL = "tracks";
         // at last we are closing our
         // database after adding database.
         db.close();
+
+        notes_list.add(0,new Note(note_name,note_link,note_description));
     }
 
     public List<Note> getNotes()
     {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM "+TABLE_NAME,null);
-        List<Note> notes_list = new ArrayList<Note>();
+        //List<Note> notes_list = new ArrayList<Note>();
         if (cursor.moveToFirst()) {
             do {
+                int link_id = cursor.getInt(0);
                 String link_txt = cursor.getString(2);
                 String link_decription = cursor.getString(3);
-                notes_list.add(new Note(link_txt,link_txt,link_decription));
+                int note_index = notes_list.size();
+                notes_list.add(new Note(link_id,link_txt,link_txt,link_decription));
 
                 Log.i("link text", link_txt);
+
                 // get  the  data into array,or class variable
             } while (cursor.moveToNext());
         }
+
         db.close();
+        Collections.reverse(notes_list);
         return notes_list;
     }
 
