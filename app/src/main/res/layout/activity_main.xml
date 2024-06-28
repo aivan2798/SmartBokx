@@ -25,6 +25,7 @@
             app:subtitleTextColor="#5DADEA"
             app:title="SmartBokx"
 
+
             app:titleTextColor="@color/white">
             <LinearLayout
                 android:layout_gravity="right"

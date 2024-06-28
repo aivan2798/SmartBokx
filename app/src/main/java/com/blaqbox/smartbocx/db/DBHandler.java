@@ -25,7 +25,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
     // below variable is for our table name.
     private static final String TABLE_NAME = "mycourses";
-
+    private static final String FTS_TABLE_NAME = "notes_fts";
     // below variable is for our id column.
     private static final String NOTE_ID = "note_id";
 
@@ -66,6 +66,30 @@ private static final String TRACKS_COL = "tracks";
         db.execSQL(query);
     }
 
+    public void migrateToFTS4Table() {
+        // Create the FTS4 table
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("CREATE VIRTUAL TABLE " + FTS_TABLE_NAME + " USING fts4("
+                + NOTE_ID + ", "
+                + NAME_COL + ", "
+                + LINK_COL + ", "
+                + DESCRIPTION_COL + ")");
+
+        // Copy data from the original table to the FTS4 table
+        db.execSQL("INSERT INTO " + FTS_TABLE_NAME + " ("
+                + NOTE_ID + ", "
+                + NAME_COL + ", "
+                + LINK_COL + ", "
+                + DESCRIPTION_COL + ") "
+                + "SELECT " + NOTE_ID + ", "
+                + NAME_COL + ", "
+                + LINK_COL + ", "
+                + DESCRIPTION_COL + " FROM " + TABLE_NAME);
+
+        // Drop the original table if it's no longer needed
+        //db.execSQL("DROP TABLE " + TABLE_NAME);
+    }
+
     // this method is use to add new course to our sqlite database.
     public void addNewNote(String note_name, String note_link, String note_description) {
 
@@ -86,7 +110,7 @@ private static final String TRACKS_COL = "tracks";
 
         // after adding all values we are passing
         // content values to our table.
-        long row_id = db.insert(TABLE_NAME, null, values);
+        long row_id = db.insert(FTS_TABLE_NAME, null, values);
         Log.i("added row_id","Row: "+row_id);
         // at last we are closing our
         // database after adding database.
@@ -94,11 +118,26 @@ private static final String TRACKS_COL = "tracks";
 
         notes_list.add(0,new Note(note_name,note_link,note_description));
     }
-
+    public boolean checkTable()
+    {
+        Cursor cursor = null;
+        SQLiteDatabase db = this.getReadableDatabase();
+        try {
+            cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name=?", new String[]{FTS_TABLE_NAME});
+            if (cursor != null && cursor.moveToFirst()) {
+                return true;
+            }
+            return false;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
     public List<Note> getNotes()
     {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM "+TABLE_NAME,null);
+        Cursor cursor = db.rawQuery("SELECT * FROM "+FTS_TABLE_NAME,null);
         //List<Note> notes_list = new ArrayList<Note>();
         if (cursor.moveToFirst()) {
             do {
@@ -123,9 +162,28 @@ private static final String TRACKS_COL = "tracks";
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // this method is called to check if the table exists already.
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + FTS_TABLE_NAME);
         onCreate(db);
 
 
+    }
+
+    public int searchNotes(List<Note> note_results,String query) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM notes_fts WHERE notes_fts MATCH ?", new String[]{query});
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                int noteId = cursor.getInt(0);
+                String name = cursor.getString(1);
+                String link = cursor.getString(2);
+                String description = cursor.getString(3);
+
+                Log.i("search result: ",name+"_"+link+"_"+noteId+" : "+description);
+                note_results.add(new Note(noteId, name, link, description));
+            }
+            cursor.close();
+        }
+        return note_results.size();
     }
 }

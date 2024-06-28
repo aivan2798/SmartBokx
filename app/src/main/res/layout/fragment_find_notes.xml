@@ -9,6 +9,9 @@
 
     <LinearLayout
         android:orientation="vertical"
+        android:background="@drawable/curved_background"
+        android:backgroundTint="@color/content_background"
+
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     <!-- TODO: Update blank fragment layout -->
@@ -16,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Find Notes" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/find_notes_inputlayout"
             android:layout_marginTop="5dp"
@@ -24,42 +28,66 @@
             app:endIconDrawable="@android:drawable/ic_menu_search"
             app:endIconTint="@color/black"
             app:hintEnabled="true"
-            app:helperText="description"
             app:hintTextColor="@color/white"
             android:layout_width="match_parent"
-            app:boxBackgroundColor="@color/white"
+            android:elevation="50dp"
             android:layout_height="wrap_content">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/find_notes_context"
+            <RelativeLayout
+                android:layout_gravity="center"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="30dp"
-                android:layout_marginRight="30dp"
-                android:gravity="top|start"
-                android:textColor="@color/white"
-                android:background="@drawable/note_actions_btn"
-                android:backgroundTint="@color/black"
-                android:inputType="textMultiLine"
-                android:lines="3"
-                android:hint="Write Note Description"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:background="@drawable/curved_background"
 
+                android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/find_notes_context"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="00dp"
+                    android:layout_marginRight="60dp"
+                    android:gravity="top|start"
+                    app:textInputLayoutFocusedRectEnabled="false"
+                    android:textColor="@color/black"
+                    android:background="@drawable/curved_gradient"
+
+                    android:inputType="textMultiLine"
+                    android:lines="1"
+                    android:textColorHint="@color/black"
+                    android:hint="Write Note Description/Search For Note"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id = "@+id/find_note_btn"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignEnd="@id/find_notes_context"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerInParent="true"
+
+                    android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+                    android:background="@drawable/round_btn"
+                    android:backgroundTint="@color/search_btn_actions"
+                    android:foreground="@android:drawable/ic_menu_search"
+                    android:foregroundGravity="clip_vertical|center"
+                    android:foregroundTint="@color/white"
+                    android:foregroundTintMode="multiply"
+                    android:padding="1dp"
+                    android:paddingEnd="1dp"
+                    android:layout_marginRight="10dp"
+                    android:text=""
+                    android:textColor="@color/white" />
+            </RelativeLayout>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textColor="@color/white"
-            android:background="@drawable/note_actions_btn"
-            android:backgroundTint="@color/content_deep_color"
-            android:foreground="@android:drawable/ic_menu_search"
-            android:foregroundGravity="clip_vertical|top|right"
-            android:foregroundTint="@color/white"
-            android:foregroundTintMode="multiply"
-            android:padding="15dp"
-            android:paddingEnd="30dp"
-            android:text="Find Note">
-        </androidx.appcompat.widget.AppCompatButton>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/notes_results_view"
+            android:elevation="10dp"
+            android:background="@drawable/curved_background"
+            android:backgroundTint="#BBBAC6"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <!--/androidx.appcompat.widget.AppCompatButton-->
     </LinearLayout>
 </FrameLayout>

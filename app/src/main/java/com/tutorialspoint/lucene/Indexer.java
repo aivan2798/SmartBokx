@@ -1,9 +1,14 @@
 package com.tutorialspoint.lucene;
 
+import android.util.Log;
+
+import com.blaqbox.smartbocx.db.Note;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -52,9 +57,42 @@ public class Indexer {
         return document;
     }
 
+    private Document getDocument(Note note_components) throws IOException {
+        Document document = new Document();
+
+        //index file contents
+        String note_description  = note_components.note_description;
+        Log.i("note_description: ", note_description);
+
+        Field contentField = new Field(LuceneConstants.CONTENTS, note_description.getBytes());
+        //index file name
+        String note_link  = note_components.note_link;
+        Log.i("note_link: ", note_link);
+        Field noteNameField = new Field(LuceneConstants.FILE_NAME,
+                note_components.note_link,Field.Store.YES,Field.Index.NOT_ANALYZED);
+        //index file path
+
+        String note_index  = Integer.toString(note_components.note_id);
+        Log.i("note_index: ", note_index);
+        Field notePathField = new Field(LuceneConstants.FILE_PATH,
+                note_index,Field.Store.YES,Field.Index.NOT_ANALYZED);
+
+        document.add(contentField);
+        document.add(noteNameField);
+        document.add(notePathField);
+
+        return document;
+    }
+
     private void indexFile(File file) throws IOException {
         System.out.println("Indexing "+file.getCanonicalPath());
         Document document = getDocument(file);
+        writer.addDocument(document);
+    }
+
+    private void indexNote(Note note_data) throws IOException {
+//        System.out.println("Indexing "+file.getCanonicalPath());
+        Document document = getDocument(note_data);
         writer.addDocument(document);
     }
 
@@ -71,6 +109,19 @@ public class Indexer {
                     && filter.accept(file)
             ){
                 indexFile(file);
+            }
+        }
+        return writer.numDocs();
+    }
+
+    public int createNoteIndex(List<Note> notes)
+            throws IOException {
+        //get all files in the data directory
+
+
+        for (Note note : notes) {
+            {
+                indexNote(note);
             }
         }
         return writer.numDocs();

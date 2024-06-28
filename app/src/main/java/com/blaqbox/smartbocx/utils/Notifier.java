@@ -45,7 +45,7 @@ public class Notifier
 
         String channel_id = context.getPackageName()+"note_bundle";
         NotificationCompat.Builder notification_builder = new NotificationCompat.Builder(context,channel_id)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.smartbocx_txt_foreground)
                 .setContentTitle(note_title)
                 .setContentText(receive_action)
                 .addAction(note_description_action)
@@ -95,7 +95,7 @@ public class Notifier
         String receive_action = intent.getAction();
         String channel_id = context.getPackageName()+"note_bundle";
         NotificationCompat.Builder notification_builder = new NotificationCompat.Builder(context,channel_id)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.smartbocx_txt_foreground)
                 .setContentTitle(note_title+" : Note Saved")
                 .setContentText(note_data)
                 .setAutoCancel(false)

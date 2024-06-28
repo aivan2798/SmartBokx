@@ -170,12 +170,13 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
     public void startClipboardService(View parent_view)
     {
 
         AppCompatButton parent_btn = (AppCompatButton) parent_view;
         int new_size = master_dbHandler.refresh();
-
+        //master_dbHandler.migrateFTS4();
         Log.i("New Size: ", "updated size is "+new_size);
         //main_tablayout.destroyDrawingCache();
         /*notifier.showNewNoteNotification(getApplicationContext(),notes_notification_manager,"New Note","New Notification");*/
@@ -192,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         clipboard_service_state = !clipboard_service_state;
+
     }
 
     public void showAddNoteView(View vw)
