@@ -37,6 +37,7 @@ import com.blaqbox.smartbocx.db.DBHandler;
 import com.blaqbox.smartbocx.db.Note;
 import com.blaqbox.smartbocx.ui.ExDialog;
 import com.blaqbox.smartbocx.utils.Notifier;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -80,6 +81,9 @@ public class MainActivity extends AppCompatActivity {
         notifier = new Notifier();
         setContentView(R.layout.activity_main);
 
+        new Thread(()->{
+            MobileAds.initialize(this);
+        }).start();
 
         viewpager = findViewById(R.id.tab_view_space);
         addnote_fab = findViewById(R.id.add_note_fab);
