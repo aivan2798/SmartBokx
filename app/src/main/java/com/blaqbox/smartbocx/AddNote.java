@@ -7,6 +7,12 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -20,6 +26,10 @@ public class AddNote extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
+    LinearLayout add_note_banner_holder;
+    private AdSize banner_adsize;
+    AdView banner_adview;
+    AdRequest banner_adrequest;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -58,7 +68,20 @@ public class AddNote extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        new Thread(()->{
+            MobileAds.initialize(getContext());
+        }).start();
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_note, container, false);
+        banner_adsize = AdSize.BANNER;
+        banner_adrequest = new AdRequest.Builder().build();
+        banner_adview = new AdView(getContext());
+        banner_adview.setAdSize(banner_adsize);
+        banner_adview.setAdUnitId(getResources().getString(R.string.main_banner_app_id));
+        banner_adview.loadAd(banner_adrequest);
+
+        View add_note_view = inflater.inflate(R.layout.fragment_add_note, container, false);
+        add_note_banner_holder =  add_note_view.findViewById(R.id.add_note_banner);
+        add_note_banner_holder.addView(banner_adview);
+        return add_note_view;
     }
 }

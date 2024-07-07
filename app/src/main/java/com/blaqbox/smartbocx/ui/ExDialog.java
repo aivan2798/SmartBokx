@@ -12,6 +12,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -22,6 +23,10 @@ import androidx.fragment.app.DialogFragment;
 import com.blaqbox.smartbocx.R;
 import com.blaqbox.smartbocx.backroom.DataConnector;
 import com.blaqbox.smartbocx.db.DBHandler;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.textfield.TextInputEditText;
 
 /**
@@ -34,18 +39,36 @@ public class ExDialog extends DialogFragment {
     AppCompatButton save_note_btn;
 
     DataConnector db_handler;
+
+    LinearLayout add_note_banner_holder;
+    private AdSize banner_adsize;
+    AdView banner_adview;
+    AdRequest banner_adrequest;
+
+    View dialog_view;
     @Nullable
     @Override
-
-
     public View onCreateView(LayoutInflater layout_inflator, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
+        /*new Thread(()->{
+            MobileAds.initialize(getContext());
+        }).start();*/
+        // Inflate the layout for this fragment
+        banner_adsize = AdSize.BANNER;
+        banner_adrequest = new AdRequest.Builder().build();
+        banner_adview = new AdView(getContext());
+        banner_adview.setAdSize(banner_adsize);
+        banner_adview.setAdUnitId(getResources().getString(R.string.main_banner_app_id));
+        banner_adview.loadAd(banner_adrequest);
+
         db_handler = DataConnector.getInstance();
                 //new DBHandler(this.getContext());
-        View dialog_view = layout_inflator.inflate(R.layout.fragment_add_note,container,false);
+        dialog_view = layout_inflator.inflate(R.layout.fragment_add_note,container,false);
         link_text = dialog_view.findViewById(R.id.link_text);
         note_desc = dialog_view.findViewById(R.id.note_desc);
         save_note_btn = dialog_view.findViewById(R.id.save_note_btn);
+        add_note_banner_holder =  dialog_view.findViewById(R.id.add_note_banner);
+        add_note_banner_holder.addView(banner_adview);
 
         save_note_btn.setOnClickListener(new View.OnClickListener() {
             @Override

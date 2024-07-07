@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.blaqbox.smartbocx.backroom.DataConnector;
@@ -37,6 +38,9 @@ import com.blaqbox.smartbocx.db.DBHandler;
 import com.blaqbox.smartbocx.db.Note;
 import com.blaqbox.smartbocx.ui.ExDialog;
 import com.blaqbox.smartbocx.utils.Notifier;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -70,24 +74,41 @@ public class MainActivity extends AppCompatActivity {
 
     FloatingActionButton addnote_fab;
 
+    AdView adview;
     TabLayout main_tablayout;
 
+    LinearLayout banner_holder;
     NotificationManager notes_notification_manager = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        new Thread(()->{
+            MobileAds.initialize(this);
+        }).start();
         //all_notes = new ArrayList<Note>();
+        adview = new AdView(this);
+        adview.setAdSize(AdSize.BANNER);
+
+        adview.setAdUnitId(getResources().getString(R.string.main_banner_app_id));
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adview.loadAd(adRequest);
+
         master_dbHandler = DataConnector.getInstance(getApplicationContext());
         notifier = new Notifier();
         setContentView(R.layout.activity_main);
 
-        new Thread(()->{
-            MobileAds.initialize(this);
-        }).start();
+
 
         viewpager = findViewById(R.id.tab_view_space);
         addnote_fab = findViewById(R.id.add_note_fab);
         main_tablayout = findViewById(R.id.main_tablayout);
+        banner_holder = findViewById(R.id.banner_holder);
+
+
+
+        banner_holder.addView(adview);
+        //adview.se
         addnote_fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
