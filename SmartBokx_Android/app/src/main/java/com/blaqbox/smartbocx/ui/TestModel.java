@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,15 +14,19 @@ import android.widget.TextView;
 
 import com.blaqbox.smartbocx.BertOps;
 import com.blaqbox.smartbocx.R;
+import com.blaqbox.smartbocx.backroom.*;
+import com.blaqbox.smartbocx.backroom.DataConnector;
 import com.google.android.material.textfield.TextInputEditText;
 
 import org.tensorflow.lite.task.text.qa.QaAnswer;
 
 import java.util.List;
 
+import io.github.jan.supabase.gotrue.user.UserSession;
+
 
 public class TestModel extends Fragment {
-
+    Bokxman bokxman;
     TextView query_answer;
     EditText query_txt;
 
@@ -39,7 +44,19 @@ public class TestModel extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         bert_man = new BertOps(this.getContext(),"");
+        bokxman = DataConnector.getBokxmanInstance();
+        /*UserSession userSession = bokxman.getUserSession();
+        if(userSession==null)
+        {
+            Log.i("Test Model","no user session");
+            //bokxman.createUser("aalg2798007@gmail.com","bokxman4altalgo");
+        }
+        else{
+            String user_data = userSession.getUser().toString();
+            Log.i("Test Model","user session: "+user_data);
+        }
 
+         */
         /*if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);

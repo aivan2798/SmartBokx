@@ -1,5 +1,7 @@
 package com.blaqbox.smartbocx.db;
 
+import com.blaqbox.smartbocx.Models.NoteJson;
+
 public class Note {
 
     public int note_id;
@@ -40,5 +42,10 @@ public class Note {
         note_name = anote_name;
         note_description = anote_description;
         note_link = anote_link;
+    }
+
+    public NoteJson toJson()
+    {
+        return new NoteJson(note_name,note_link,note_description);
     }
 }

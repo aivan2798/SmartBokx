@@ -1,11 +1,23 @@
 plugins {
     id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.5.0'
 }
 
 android {
     namespace 'com.blaqbox.smartbocx'
     compileSdk 34
-
+    packagingOptions {
+        exclude("META-INF/DEPENDENCIES")
+        exclude("META-INF/LICENSE")
+        exclude("META-INF/LICENSE.txt")
+        exclude("META-INF/license.txt")
+        exclude("META-INF/NOTICE")
+        exclude("META-INF/NOTICE.txt")
+        exclude("META-INF/notice.txt")
+        exclude("META-INF/ASL2.0")
+        exclude("META-INF/*.kotlin_module")
+    }
     defaultConfig {
         applicationId "com.blaqbox.smartbocx"
         minSdk 23
@@ -26,11 +38,15 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    kotlinOptions{
+        jvmTarget = "1.8"
+    }
     buildFeatures {
         viewBinding true
         mlModelBinding true
     }
 }
+
 
 dependencies {
 
@@ -42,6 +58,7 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.6.0'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
     //implementation 'org.tensorflow:tensorflow-lite-support:0.1.0'
     //implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
     //implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
@@ -50,4 +67,23 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     implementation 'org.tensorflow:tensorflow-lite-task-text:0.4.4'
     implementation 'com.google.android.gms:play-services-ads:23.2.0'
+    implementation 'io.github.jan-tennert.supabase:supabase-kt:2.5.4'
+    implementation platform("io.github.jan-tennert.supabase:bom:$supabase_version")
+    implementation "io.github.jan-tennert.supabase:postgrest-kt:$supabase_version"
+    implementation "io.github.jan-tennert.supabase:gotrue-kt:$supabase_version"
+    implementation "io.github.jan-tennert.supabase:realtime-kt:$supabase_version"
+    implementation "io.ktor:ktor-client-android:$ktor_version"
+    implementation "io.ktor:ktor-client-core:$ktor_version"
+    implementation "io.ktor:ktor-client-cio:$ktor_version"
+    implementation "io.github.jan-tennert.supabase:serializer-jackson:$supabase_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core"
+    implementation "com.squareup.okhttp3:okhttp:4.9.1"
+    //implementation 'com.konghq.unirest:unirest-java:1.4.9'
+    //implementation 'com.konghq:unirest-java-bom:4.0.0'
+    ///implementation 'com.konghq:unirest-java-core:4.0.0'
+    //implementation 'com.konghq:unirest-modules-gson:4.3.0'
+    //implementation 'com.konghq:unirest-modules-jackson:4.3.0'
+
+
 }

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_marginTop="10dp"
+    android:background="@drawable/curved_background"
+
+    android:outlineSpotShadowColor="#FF0404"
+    android:layout_marginLeft="5dp"
+    android:layout_marginRight="10dp"
+    android:layout_marginBottom="10dp"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:id="@+id/note_summary_layout"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:background="#3A3636"
+            android:padding="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp">
+            <TextView
+                android:id="@+id/note_question"
+                android:text=""
+
+                android:textIsSelectable="true"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:shadowColor="@color/black"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowRadius="0"
+                android:fontFamily="sans-serif-condensed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <TextView
+            android:id="@+id/note_answer"
+            android:text="....."
+            android:textColor="@color/content_deep_color"
+            android:textStyle="normal"
+            android:textFontWeight="500"
+            android:layout_marginLeft="10dp"
+            android:textIsSelectable="true"
+            android:padding="10dp"
+            android:fontFamily="sans-serif-condensed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <LinearLayout
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
+            android:padding="5dp"
+
+            android:layout_width="match_parent"
+            android:background="#3A3636"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <!--androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/note_edit"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:background="@drawable/note_actions_btn"
+                android:foregroundTint="@color/black"
+                app:layout_constraintEnd_toEndOf="@id/note_summary_layout"
+                android:foreground="@drawable/baseline_edit_note_24"/-->
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/note_speak"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginLeft="50dp"
+                android:background="@drawable/note_actions_btn"
+                android:foregroundTint="@color/black"
+                app:layout_constraintEnd_toEndOf="@id/note_summary_layout"
+                android:foreground="@android:drawable/ic_lock_silent_mode_off"/>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/note_delete"
+                android:elevation="50dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:background="@drawable/note_actions_btn"
+                android:layout_marginLeft="50dp"
+                android:foregroundTint="#950101"
+                app:layout_constraintEnd_toEndOf="@id/note_summary_layout"
+                android:foreground="@drawable/baseline_delete_outline_24"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

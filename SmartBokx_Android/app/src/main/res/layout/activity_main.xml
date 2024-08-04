@@ -39,14 +39,14 @@
                 android:textSize="10dp"
 
                 android:layout_width="wrap_content"
-                android:text="Refresh Data"/>
+                android:text="Sync Bokx"/>
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/toggle_clipboard_service_btn"
                 android:textStyle="bold"
                 android:fontFamily="sans-serif-condensed-medium"
                 android:textColor="@color/white"
                 android:elevation="50dp"
-                android:onClick="startClipboardService"
+                android:onClick="syncBokx"
                 android:text=""
                 android:layout_gravity="right"
                 android:layout_marginRight="10dp"
@@ -100,8 +100,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
             <com.google.android.material.tabs.TabItem
-                android:text="Test Model"
-                android:icon="@android:drawable/ic_menu_edit"
+                android:text="Bokx AI"
+                android:icon="@drawable/ic_launcher_foreground"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         </com.google.android.material.tabs.TabLayout>

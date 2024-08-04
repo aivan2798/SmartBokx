@@ -1,5 +1,6 @@
 package com.blaqbox.smartbocx;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatToggleButton;
@@ -32,12 +33,19 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.blaqbox.smartbocx.Models.NoteJson;
+import com.blaqbox.smartbocx.Models.SieveBokx;
+import com.blaqbox.smartbocx.Models.SieveBokxBaseModel;
+import com.blaqbox.smartbocx.Models.SieveSyncModel;
+import com.blaqbox.smartbocx.backroom.Bokxman;
 import com.blaqbox.smartbocx.backroom.DataConnector;
 import com.blaqbox.smartbocx.backroom.NoteReceiver;
 import com.blaqbox.smartbocx.db.DBHandler;
 import com.blaqbox.smartbocx.db.Note;
+import com.blaqbox.smartbocx.db.NoteQA;
 import com.blaqbox.smartbocx.ui.ExDialog;
 import com.blaqbox.smartbocx.utils.Notifier;
+import com.blaqbox.smartbocx.utils.SieveDataHelper;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
@@ -46,6 +54,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -60,9 +71,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.github.jan.supabase.gotrue.user.UserSession;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
+import okio.Buffer;
+
 public class MainActivity extends AppCompatActivity {
     Notifier notifier;
-
+    SieveDataHelper sieveDataHelper;
+    String function_name = "";
+    String bokxman_sieveman_apikey = "";
     //List<Note> all_notes;
     DataConnector master_dbHandler;
     TabAdapter tab_adapter;
@@ -79,6 +98,9 @@ public class MainActivity extends AppCompatActivity {
 
     LinearLayout banner_holder;
     NotificationManager notes_notification_manager = null;
+
+    Bokxman bokxman;
+    SyncSieveCallBack syncSieveCallBack;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         adview.loadAd(adRequest);
 
         master_dbHandler = DataConnector.getInstance(getApplicationContext());
+        bokxman = DataConnector.getBokxmanInstance();
         notifier = new Notifier();
         setContentView(R.layout.activity_main);
 
@@ -104,7 +127,9 @@ public class MainActivity extends AppCompatActivity {
         addnote_fab = findViewById(R.id.add_note_fab);
         main_tablayout = findViewById(R.id.main_tablayout);
         banner_holder = findViewById(R.id.banner_holder);
-
+        syncSieveCallBack = new SyncSieveCallBack();
+        sieveDataHelper = new SieveDataHelper(bokxman_sieveman_apikey);
+        sieveDataHelper.setSieveCallback(syncSieveCallBack);
 
 
         banner_holder.addView(adview);
@@ -221,9 +246,123 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void syncBokx(View parent_view)
+    {
+        UserSession user_session = bokxman.getUserSession();
+
+        List<NoteJson> notejson_list = new ArrayList<NoteJson>();
+        if(user_session!=null) {
+            for (Note note: master_dbHandler.getAllNotes()){
+                notejson_list.add(note.toJson());
+            }
+            String user_id = user_session.getUser().getEmail();
+            SieveBokx sieveBokx = new SieveBokx(notejson_list,"digest",user_id);
+            SieveBokxBaseModel sieveBokxBaseModel = new SieveBokxBaseModel(sieveBokx);
+            String sievesync_json = new SieveSyncModel(function_name,sieveBokxBaseModel).makeJson();
+
+
+            sieveDataHelper.pushJob(sievesync_json);
+            Log.i("sievebokx json", sievesync_json);
+        }
+        else{
+            Toast.makeText(this,"PLEASE LOGIN/SIGN UP 1ST",Toast.LENGTH_LONG).show();
+            viewpager.setCurrentItem(2,true);
+        }
+
+
+    }
+
     public void showAddNoteView(View vw)
     {
         exDialog.show(fragment_manager," test");
         viewpager.invalidate();
+    }
+
+
+    public class SyncSieveCallBack implements Callback {
+        @Override
+        public void onFailure(Call call, IOException e) {
+            e.printStackTrace();
+        }
+
+        @Override
+        public void onResponse(@NonNull Call call, @NonNull Response sieve_response) throws IOException
+        {
+            String request_headers = call.request().headers().toString();
+            Buffer kk = new Buffer();
+            //call.request().body().writeTo(kk);
+            //String request_str = kk.readUtf8();
+            //String request_body = request_str+"___"+call.request().body().contentLength();
+            //Log.i("request summary",request_headers+"\n"+request_body);
+            String json_str = sieve_response.body().string();
+
+            int response_code = sieve_response.code();
+            String response_headers = sieve_response.headers().toString();
+            String response_msg = sieve_response.message();
+            Log.i("unirest response json", json_str+"\n"+response_code+":\t"+response_headers+"\nresponse_msg"+response_msg);
+
+            try {
+                JSONObject job_json = new JSONObject(json_str);
+                String job_status = job_json.getString("status");
+                String job_id = job_json.getString("id");
+                if(job_status.equals("finished")){
+                    //JSONArray json_outputs = job_json.getJSONArray("outputs");
+                    //JSONObject query_output = json_outputs.getJSONObject(0);
+                    //String query_answer = query_output.getJSONObject("data").getString("answer");
+                    //search_results.clear();
+                    //search_results.add(new NoteQA(recent_query,query_answer));
+                    Log.i("Job Status"," Job has been finished");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            
+                            Toast.makeText(getApplicationContext(),"Data Finished to Synchronise",Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+                else if(job_status.equals("queued")){
+                    //recent_job = job_id;
+                    //model_free = false;
+                    //search_results.clear();
+                    //search_results.add(new NoteQA(recent_query,"Please wait ...."));
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            Toast.makeText(getApplicationContext(),"Data Synchronc Started",Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+
+                    new Thread(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    sieveDataHelper.getJob(job_id);
+                                }
+                            }
+
+                    ).run();
+                }
+                else{
+                    Log.i("Job Status",job_status);
+                    new Thread(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    sieveDataHelper.getJob(job_id);
+                                }
+                            }
+
+                    ).run();
+                }
+
+            }
+            catch(Exception except){
+                Log.e("call back error",except.getMessage());
+            }
+
+        }
     }
 }

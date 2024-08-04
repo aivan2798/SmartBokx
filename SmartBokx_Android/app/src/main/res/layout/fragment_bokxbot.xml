@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/gray_600"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.FindNotes">
+    <!--android:backgroundTint="@color/gray_600"-->
+    <LinearLayout
+        android:orientation="vertical"
+        android:background="@drawable/curved_background"
+
+        android:backgroundTint="#3A3636"
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <!-- TODO: Update blank fragment layout -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Find Notes" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/find_notes_inputlayout"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            app:cursorColor="@color/white"
+            app:endIconDrawable="@android:drawable/ic_menu_send"
+            app:endIconTint="@color/black"
+            app:hintEnabled="true"
+            app:hintTextColor="@color/white"
+            android:layout_width="match_parent"
+            android:elevation="50dp"
+            android:layout_height="wrap_content">
+            <RelativeLayout
+                android:layout_gravity="center"
+                android:layout_width="match_parent"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:background="@drawable/curved_background"
+
+                android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/find_notes_context"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="00dp"
+                    android:layout_marginRight="60dp"
+                    android:gravity="top|start"
+                    app:textInputLayoutFocusedRectEnabled="false"
+                    android:textColor="@color/black"
+                    android:background="@drawable/curved_gradient"
+
+                    android:inputType="textMultiLine"
+                    android:lines="4"
+                    android:textColorHint="@color/black"
+                    android:hint="Write Note Description/Search For Note"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/find_note_btn"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignEnd="@id/find_notes_context"
+                    android:layout_alignParentEnd="true"
+
+                    android:layout_centerInParent="true"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/round_btn"
+                    android:backgroundTint="@color/search_btn_actions"
+                    android:foreground="@android:drawable/ic_menu_send"
+                    android:foregroundGravity="clip_vertical|center"
+                    android:foregroundTint="@color/white"
+                    android:foregroundTintMode="multiply"
+                    android:padding="1dp"
+                    android:paddingEnd="1dp"
+                    android:text=""
+                    android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+                    android:textColor="@color/white" />
+            </RelativeLayout>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/notes_results_view"
+            android:elevation="10dp"
+            android:background="@drawable/curved_background"
+            android:backgroundTint="@color/gray_600"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+        <!--android:backgroundTint="#BBBAC6"-->
+        <!--/androidx.appcompat.widget.AppCompatButton-->
+    </LinearLayout>
+</FrameLayout>

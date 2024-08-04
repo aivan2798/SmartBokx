@@ -16,6 +16,9 @@ import java.util.List;
 public class DataConnector
 {
     private static List<Note> all_notes;
+    private static String project_url = "";
+    private static String project_key = "";
+    private static Bokxman bokxman = new Bokxman(project_key,project_url);
     private static DBHandler dbHandler;
     private static String index_directory;
     private static NotesListAdapter all_notes_adapter;
@@ -30,6 +33,12 @@ public class DataConnector
     {
         all_notes  = new ArrayList<Note>();
 
+    }
+
+
+    public static Bokxman getBokxmanInstance()
+    {
+        return bokxman;
     }
 
     public static DataConnector getInstance()

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:minWidth="300dp"
+    android:orientation="vertical"
+    android:background="@drawable/curved_background"
+
+    android:backgroundTint="@color/content_background"
+    tools:context=".AddNote">
+    <!-- TODO: Update blank fragment layout -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:letterSpacing="0.2"
+        android:layout_gravity="center_horizontal"
+        android:text="Create User Session" />
+    <!--com.google.android.material.textfield.TextInputLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            android:hint="write note title"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>
+
+
+    </com.google.android.material.textfield.TextInputLayout-->
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_marginTop="5dp"
+        android:theme="@style/EditTextThemeOverlay"
+        android:layout_marginBottom="5dp"
+        android:textColorHint="@color/black"
+        app:hintTextColor="@color/light_blue_600"
+        app:boxStrokeColor="@color/input_box_colors"
+        android:tooltipText="Your email address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/email_text"
+
+            android:textColor="@color/black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:hint="Email Address"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/password_inputlayout"
+        android:layout_marginTop="5dp"
+        android:theme="@style/EditTextThemeOverlay"
+        android:textColorHint="@color/black"
+        app:hintTextColor="@color/light_blue_600"
+        android:layout_marginBottom="5dp"
+        app:passwordToggleDrawable="@android:drawable/ic_menu_view"
+        app:passwordToggleEnabled="true"
+        app:passwordToggleTint="@color/black"
+        app:passwordToggleTintMode="multiply"
+        app:boxStrokeColor="@color/input_box_colors"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/user_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:gravity="top|start"
+
+            android:textColor="@color/black"
+            android:hint="Your Password"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+    <TextView
+        android:id="@+id/auth_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:letterSpacing="0.2"
+        android:layout_gravity="center_horizontal"
+        android:text="" />
+    <LinearLayout
+        android:id="@+id/add_note_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"/>
+    <LinearLayout
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/create_user_btn"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center_horizontal"
+
+            android:backgroundTint="@color/black"
+            android:layout_height="wrap_content"
+            android:elevation="100dp"
+            android:shadowDy="50"
+            android:shadowDx="50"
+            android:shadowRadius="0.5"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:layout_marginBottom="50dp"
+            android:text="Create Account"/>
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/login_btn"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center_horizontal"
+
+            android:backgroundTint="@color/content_deep_color"
+            android:layout_height="wrap_content"
+            android:elevation="100dp"
+            android:shadowDy="50"
+            android:shadowDx="50"
+            android:shadowRadius="0.5"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:layout_marginBottom="50dp"
+            android:text="Login"/>
+    </LinearLayout>
+
+</LinearLayout>
