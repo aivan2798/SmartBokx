@@ -15,4 +15,10 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="add_note_title">Add Note</string>
     <string name="main_banner_app_id">ca-app-pub-3940256099942544/9214589741</string>
+    <string name="supabase_url">https://bjzhvayyfwkhmymmpuqf.supabase.co</string>
+    <string name="supabase_apikey">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqemh2YXl5ZndraG15bW1wdXFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjI1NDk3MTMsImV4cCI6MjAzODEyNTcxM30.PdBzt2HO0jCVlfpG1F7pG8OceezOO-1VRK8MerUS6a4</string>
+    <string name="bokx_get_url">https://ty051i.buildship.run/bokx/model/jobs</string>
+    <string name="bokx_post_url">https://ty051i.buildship.run/bokx/model</string>
+    <string name="bokx_auth_url">https://ty051i.buildship.run/bokx/auth/signup</string>
+    <string name="bokx_base_url">https://ty051i.buildship.run/bokx</string>
 </resources>

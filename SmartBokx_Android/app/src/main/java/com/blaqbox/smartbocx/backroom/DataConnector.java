@@ -3,6 +3,7 @@ package com.blaqbox.smartbocx.backroom;
 import android.content.Context;
 import android.util.Log;
 
+import com.blaqbox.smartbocx.R;
 import com.blaqbox.smartbocx.db.DBHandler;
 import com.blaqbox.smartbocx.db.Note;
 import com.blaqbox.smartbocx.ui.adapters.NotesListAdapter;
@@ -18,7 +19,7 @@ public class DataConnector
     private static List<Note> all_notes;
     private static String project_url = "";
     private static String project_key = "";
-    private static Bokxman bokxman = new Bokxman(project_key,project_url);
+    private static Bokxman bokxman;// = new Bokxman(project_key,project_url);
     private static DBHandler dbHandler;
     private static String index_directory;
     private static NotesListAdapter all_notes_adapter;
@@ -78,6 +79,9 @@ public class DataConnector
     public static DataConnector getInstance(Context context)
     {
         db_context = context;
+        project_key = context.getResources().getString(R.string.supabase_apikey);
+        project_url = context.getResources().getString(R.string.supabase_url);
+        bokxman = new Bokxman(project_key,project_url);
         dbHandler = new DBHandler(db_context,all_notes);
         boolean is_okay = dbHandler.checkTable();
         if(is_okay==false)

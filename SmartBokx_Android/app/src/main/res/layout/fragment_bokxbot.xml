@@ -10,9 +10,9 @@
     <!--android:backgroundTint="@color/gray_600"-->
     <LinearLayout
         android:orientation="vertical"
-        android:background="@drawable/curved_background"
 
-        android:backgroundTint="#3A3636"
+
+        android:background="#3A3636"
 
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -20,7 +20,10 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Find Notes" />
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-condensed"
+            android:text="ASK BOKX" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/find_notes_inputlayout"
@@ -54,7 +57,7 @@
                     android:background="@drawable/curved_gradient"
 
                     android:inputType="textMultiLine"
-                    android:lines="4"
+                    android:lines="2"
                     android:textColorHint="@color/black"
                     android:hint="Write Note Description/Search For Note"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>

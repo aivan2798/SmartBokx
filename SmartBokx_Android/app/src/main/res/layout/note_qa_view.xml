@@ -24,9 +24,16 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp">
             <TextView
+                android:layout_width="wrap_content"
+                android:backgroundTint="@color/white"
+                android:backgroundTintMode="multiply"
+                android:background="@drawable/baseline_self_improvement_24"
+                android:layout_height="wrap_content"/>
+            <TextView
                 android:id="@+id/note_question"
                 android:text=""
-
+                android:letterSpacing="0.0"
+                android:textSize="@dimen/headline_txt"
                 android:textIsSelectable="true"
                 android:textColor="@color/white"
                 android:textStyle="bold"
@@ -38,18 +45,34 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
-        <TextView
-            android:id="@+id/note_answer"
-            android:text="....."
-            android:textColor="@color/content_deep_color"
-            android:textStyle="normal"
-            android:textFontWeight="500"
-            android:layout_marginLeft="10dp"
-            android:textIsSelectable="true"
-            android:padding="10dp"
-            android:fontFamily="sans-serif-condensed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/bokx_reply_icon"
+                android:layout_marginLeft="10dp"
+                android:layout_width="wrap_content"
+                android:backgroundTint="@color/black"
+                android:text=""
+                android:backgroundTintMode="multiply"
+                android:background="@drawable/baseline_android_24"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/note_answer"
+                android:text="....."
+
+                android:textColor="@color/content_deep_color"
+                android:textStyle="normal"
+                android:textFontWeight="500"
+                android:layout_marginLeft="10dp"
+                android:textIsSelectable="true"
+                android:letterSpacing="0.12"
+                android:padding="10dp"
+                android:fontFamily="sans-serif-condensed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_marginLeft="10dp"

@@ -29,12 +29,12 @@
             </intent-filter>
         </activity>
 
-        <receiver
+        <!--receiver
             android:name=".backroom.NoteReceiver"
             android:enabled="true"
             android:exported="true">
 
-        </receiver>
+        </receiver-->
 
         <activity
             android:name=".MainActivity"
@@ -45,6 +45,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".backroom.NoteReceiver" android:enabled="true" android:exported="true">
+            <intent-filter>
+                <action android:name="com.blaqbokx.smartbocx.ADD_NOTE"/>
+            </intent-filter>
+        </receiver>
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

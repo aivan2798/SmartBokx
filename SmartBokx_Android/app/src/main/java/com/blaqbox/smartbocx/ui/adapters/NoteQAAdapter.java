@@ -1,10 +1,15 @@
 package com.blaqbox.smartbocx.ui.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.blaqbox.smartbocx.R;
@@ -16,6 +21,10 @@ import java.util.List;
 
 public class NoteQAAdapter extends RecyclerView.Adapter<NoteQAListViewHolder>{
     List<NoteQA> all_notes;
+    TextView bokx_loader_icon;
+    Context context;
+    Animation bokx_reply_animation;
+    View note_summary_view;
     public NoteQAAdapter(List<NoteQA> notes_list)
     {
         all_notes = notes_list;
@@ -23,11 +32,12 @@ public class NoteQAAdapter extends RecyclerView.Adapter<NoteQAListViewHolder>{
     @Override
     public NoteQAListViewHolder onCreateViewHolder(ViewGroup viewParent, int viewType)
     {
-        Context context = viewParent.getContext();
-
+        context = viewParent.getContext();
+        bokx_reply_animation = AnimationUtils.loadAnimation(context,R.anim.faded);
         LayoutInflater layoutInflater = LayoutInflater.from(context);
 
-        View note_summary_view = layoutInflater.inflate(R.layout.note_qa_view,viewParent,false);
+        note_summary_view = layoutInflater.inflate(R.layout.note_qa_view,viewParent,false);
+        bokx_loader_icon = note_summary_view.findViewById(R.id.bokx_reply_icon);
 
         return new NoteQAListViewHolder(note_summary_view);
     }
@@ -35,9 +45,20 @@ public class NoteQAAdapter extends RecyclerView.Adapter<NoteQAListViewHolder>{
     @Override
     public void onBindViewHolder(NoteQAListViewHolder viewHolder, int view_position)
     {
+
         NoteQA note = all_notes.get(view_position);
         viewHolder.note_question.setText(note.note_question);
         viewHolder.note_answer.setText(note.note_answer);
+        if(!note.isFinalAnswer()){
+            bokx_loader_icon.startAnimation(bokx_reply_animation);
+        }
+
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
+        Log.i("RECYCLER VIEW LOG", "detached from recycler view");
     }
 
     @Override
@@ -50,5 +71,13 @@ public class NoteQAAdapter extends RecyclerView.Adapter<NoteQAListViewHolder>{
     public NoteQA getItem(int position)
     {
         return all_notes.get(position);
+    }
+
+    public void stopAnimation(){
+        bokx_loader_icon.clearAnimation();
+    }
+
+    public void startAnimation(){
+        bokx_loader_icon.startAnimation(bokx_reply_animation);
     }
 }

@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,7 +33,7 @@ import com.blaqbox.smartbocx.db.Note;
 import com.blaqbox.smartbocx.db.NoteQA;
 import com.blaqbox.smartbocx.ui.adapters.NoteQAAdapter;
 import com.blaqbox.smartbocx.ui.adapters.NotesListAdapter;
-import com.blaqbox.smartbocx.utils.SieveDataHelper;
+import com.blaqbox.smartbocx.utils.BokxAPIHelper;
 import com.google.android.material.textfield.TextInputEditText;
 
 
@@ -69,17 +71,19 @@ public class BokxBot extends Fragment {
     Bokxman bokxman;
     public NoteQAAdapter note_results_adapter;
     TextInputEditText note_query_input;
-    String function_name = ""
+    String function_name = "";
     List<NoteQA> search_results;
-    SieveDataHelper sieveDataHelper;
-    String bokxman_sieveman_apikey = "";
+    BokxAPIHelper bokxAPIHelper;
+
     RecyclerView notes_results;
     UserSession user_session;
-    BokxSieveCallBack bokxSieveCallBack;
+    BokxAPICallBack bokxAPICallBack;
     //OkHttpClient okhttp;
     MutableLiveData<String> auth_status = new MutableLiveData<String>();
 
+
     boolean model_free = true;
+
     MutableLiveData<Boolean> has_auth = new MutableLiveData<Boolean>();
     public BokxBot() {
         // Required empty public constructor
@@ -91,11 +95,10 @@ public class BokxBot extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         bokxman = DataConnector.getBokxmanInstance();
-        sieveDataHelper = new SieveDataHelper(bokxman_sieveman_apikey);
-        //okhttp = new OkHttpClient();
+        String bokx_url = getResources().getString(R.string.bokx_base_url);
         user_session = bokxman.getUserSession();
-        bokxSieveCallBack = new BokxSieveCallBack();
-        sieveDataHelper.setSieveCallback(bokxSieveCallBack);
+
+
         auth_status.observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(String s) {
@@ -116,12 +119,19 @@ public class BokxBot extends Fragment {
         });
 
         if(user_session!=null) {
+            bokxAPIHelper = new BokxAPIHelper(bokx_url,user_session.getAccessToken());
+            //okhttp = new OkHttpClient();
+
+            bokxAPICallBack = new BokxAPICallBack();
+            bokxAPIHelper.setBokxCallback(bokxAPICallBack);
             // Inflate the layout for this fragment
             search_results = new ArrayList<NoteQA>();
             find_notes_view = inflater.inflate(R.layout.fragment_bokxbot, container, false);
             note_results_adapter = new NoteQAAdapter(search_results);
 
             note_query_input = find_notes_view.findViewById(R.id.find_notes_context);
+
+
             find_notes_btn = find_notes_view.findViewById(R.id.find_note_btn);
             notes_results = find_notes_view.findViewById(R.id.notes_results_view);
             notes_results.setLayoutManager(new LinearLayoutManager(BokxBot.this.getContext()));
@@ -222,6 +232,7 @@ public class BokxBot extends Fragment {
     }
 
     public void runModel(View vw){
+
         search_results.clear();
         String query_string = note_query_input.getText().toString();
         recent_query = query_string;
@@ -230,16 +241,19 @@ public class BokxBot extends Fragment {
         Log.i("Notes directory: ",notes_index_path);
 
         search_results.add(new NoteQA(query_string,"Thinking my friend"));
+
         note_results_adapter.notifyDataSetChanged();
-        String user_id = user_session.getUser().getEmail();
+        //note_results_adapter.startAnimation();
+        String user_id = "";
+        //String user_token = user_session.getAccessToken();
         QABuilder qa_made_json = new QABuilder(query_string,"query",user_id);
         QAModel qaModel = qa_made_json.getQAModel();
         SieveBaseModel sieveBaseModel = new SieveBaseModel(qaModel);
         String made_json = qa_made_json.makeJson();
         Log.i("Json query",made_json);
-        SieveModel sieveModel = new SieveModel(function_name,sieveBaseModel);
-        String sieve_json = sieveModel.makeJson();
-        Log.i("Json query",sieve_json);
+        //SieveModel sieveModel = new SieveModel(function_name,sieveBaseModel);
+        //String sieve_json = sieveModel.makeJson();
+        //Log.i("Json query",sieve_json);
 
 
 
@@ -250,7 +264,7 @@ public class BokxBot extends Fragment {
                         try {
                                 if(model_free)
                                 {
-                                    sieveDataHelper.pushJob(sieve_json);
+                                    bokxAPIHelper.pushJob(made_json);
                                 }
 
                             //String sieve_url = "https://mango.sievedata.com/v2/push";
@@ -315,7 +329,7 @@ public class BokxBot extends Fragment {
 
 
 
-    public class BokxSieveCallBack implements Callback{
+    public class BokxAPICallBack implements Callback{
         @Override
         public void onFailure(Call call,IOException e) {
             e.printStackTrace();
@@ -339,20 +353,21 @@ public class BokxBot extends Fragment {
 
             try {
                 JSONObject job_json = new JSONObject(json_str);
-                String job_status = job_json.getString("status");
-                String job_id = job_json.getString("id");
+                String job_status = job_json.getString("job_status");
+                String job_id = job_json.getString("job_id");
                 if(job_status.equals("finished")){
                     JSONArray json_outputs = job_json.getJSONArray("outputs");
                     JSONObject query_output = json_outputs.getJSONObject(0);
-                    String query_answer = query_output.getJSONObject("data").getString("answer");
+                    String query_answer = query_output.getString("answer");
                     search_results.clear();
-                    search_results.add(new NoteQA(recent_query,query_answer));
+                    search_results.add(new NoteQA(recent_query,query_answer,true));
                     Log.i("Job Status"," Job has been finished");
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
 
                             note_results_adapter.notifyDataSetChanged();
+
                             model_free = true;
                         }
                     });
@@ -366,6 +381,7 @@ public class BokxBot extends Fragment {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            note_results_adapter.startAnimation();
                             note_results_adapter.notifyDataSetChanged();
                         }
                     });
@@ -375,7 +391,7 @@ public class BokxBot extends Fragment {
                             new Runnable() {
                                 @Override
                                 public void run() {
-                                    sieveDataHelper.getJob(job_id);
+                                    bokxAPIHelper.getJob(job_id);
                                 }
                             }
 
@@ -387,7 +403,7 @@ public class BokxBot extends Fragment {
                             new Runnable() {
                                 @Override
                                 public void run() {
-                                    sieveDataHelper.getJob(job_id);
+                                    bokxAPIHelper.getJob(job_id);
                                 }
                             }
 

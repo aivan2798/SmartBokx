@@ -30,6 +30,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -45,7 +47,7 @@ import com.blaqbox.smartbocx.db.Note;
 import com.blaqbox.smartbocx.db.NoteQA;
 import com.blaqbox.smartbocx.ui.ExDialog;
 import com.blaqbox.smartbocx.utils.Notifier;
-import com.blaqbox.smartbocx.utils.SieveDataHelper;
+import com.blaqbox.smartbocx.utils.BokxAPIHelper;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
@@ -79,7 +81,7 @@ import okio.Buffer;
 
 public class MainActivity extends AppCompatActivity {
     Notifier notifier;
-    SieveDataHelper sieveDataHelper;
+    BokxAPIHelper bokxAPIHelper;
     String function_name = "";
     String bokxman_sieveman_apikey = "";
     //List<Note> all_notes;
@@ -90,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     View notes_list;
     ExDialog exDialog;
     FragmentManager fragment_manager;
-
+    Animation sync_animation;
     FloatingActionButton addnote_fab;
 
     AdView adview;
@@ -99,8 +101,12 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout banner_holder;
     NotificationManager notes_notification_manager = null;
 
+    AppCompatButton sync_btn;
     Bokxman bokxman;
-    SyncSieveCallBack syncSieveCallBack;
+    String bokx_url;
+
+    UserSession user_session;
+    SyncBokxCallBack syncBokxCallBack;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
         //all_notes = new ArrayList<Note>();
         adview = new AdView(this);
         adview.setAdSize(AdSize.BANNER);
+        sync_animation = AnimationUtils.loadAnimation(this,R.anim.rotator);
 
         adview.setAdUnitId(getResources().getString(R.string.main_banner_app_id));
 
@@ -120,16 +127,27 @@ public class MainActivity extends AppCompatActivity {
         bokxman = DataConnector.getBokxmanInstance();
         notifier = new Notifier();
         setContentView(R.layout.activity_main);
-
+        sync_btn =(AppCompatButton) findViewById(R.id.toggle_clipboard_service_btn);
+        //sync_btn.startAnimation(sync_animation);
 
 
         viewpager = findViewById(R.id.tab_view_space);
         addnote_fab = findViewById(R.id.add_note_fab);
         main_tablayout = findViewById(R.id.main_tablayout);
         banner_holder = findViewById(R.id.banner_holder);
-        syncSieveCallBack = new SyncSieveCallBack();
-        sieveDataHelper = new SieveDataHelper(bokxman_sieveman_apikey);
-        sieveDataHelper.setSieveCallback(syncSieveCallBack);
+        syncBokxCallBack = new SyncBokxCallBack();
+        bokx_url = getString(R.string.bokx_base_url);
+        user_session = bokxman.getUserSession();
+
+        if(user_session!=null) {
+            String user_token = user_session.getAccessToken();
+            bokxAPIHelper = new BokxAPIHelper(bokx_url, user_token);
+            bokxAPIHelper.setBokxCallback(syncBokxCallBack);
+        }
+        else{
+            bokxAPIHelper = new BokxAPIHelper(bokx_url);
+            bokxAPIHelper.setBokxCallback(syncBokxCallBack);
+        }
 
 
         banner_holder.addView(adview);
@@ -248,20 +266,29 @@ public class MainActivity extends AppCompatActivity {
 
     public void syncBokx(View parent_view)
     {
-        UserSession user_session = bokxman.getUserSession();
+        sync_btn.startAnimation(sync_animation);
+        UserSession xuser_session = bokxman.getUserSession();
+
+        if((user_session==null)&&(xuser_session!=null)){
+            user_session = xuser_session;
+            bokxAPIHelper = new BokxAPIHelper(bokx_url,user_session.getAccessToken());
+        }
 
         List<NoteJson> notejson_list = new ArrayList<NoteJson>();
         if(user_session!=null) {
+
             for (Note note: master_dbHandler.getAllNotes()){
                 notejson_list.add(note.toJson());
             }
-            String user_id = user_session.getUser().getEmail();
+            String user_id = "";
             SieveBokx sieveBokx = new SieveBokx(notejson_list,"digest",user_id);
-            SieveBokxBaseModel sieveBokxBaseModel = new SieveBokxBaseModel(sieveBokx);
-            String sievesync_json = new SieveSyncModel(function_name,sieveBokxBaseModel).makeJson();
+            //SieveBokxBaseModel sieveBokxBaseModel = new SieveBokxBaseModel(sieveBokx);
+            String sievesync_json = sieveBokx.makeJson();
+            //new SieveSyncModel(function_name,sieveBokxBaseModel).makeJson();
 
 
-            sieveDataHelper.pushJob(sievesync_json);
+            bokxAPIHelper.pushJob(sievesync_json);
+            //Log.i("sievebokx json", sieveBokxBaseModel.makeJson());
             Log.i("sievebokx json", sievesync_json);
         }
         else{
@@ -279,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public class SyncSieveCallBack implements Callback {
+    public class SyncBokxCallBack implements Callback {
         @Override
         public void onFailure(Call call, IOException e) {
             e.printStackTrace();
@@ -303,8 +330,8 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 JSONObject job_json = new JSONObject(json_str);
-                String job_status = job_json.getString("status");
-                String job_id = job_json.getString("id");
+                String job_status = job_json.getString("job_status");
+                String job_id = job_json.getString("job_id");
                 if(job_status.equals("finished")){
                     //JSONArray json_outputs = job_json.getJSONArray("outputs");
                     //JSONObject query_output = json_outputs.getJSONObject(0);
@@ -315,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            
+                            sync_btn.clearAnimation();
                             Toast.makeText(getApplicationContext(),"Data Finished to Synchronise",Toast.LENGTH_LONG).show();
                         }
                     });
@@ -339,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
                             new Runnable() {
                                 @Override
                                 public void run() {
-                                    sieveDataHelper.getJob(job_id);
+                                    bokxAPIHelper.getJob(job_id);
                                 }
                             }
 
@@ -351,7 +378,7 @@ public class MainActivity extends AppCompatActivity {
                             new Runnable() {
                                 @Override
                                 public void run() {
-                                    sieveDataHelper.getJob(job_id);
+                                    bokxAPIHelper.getJob(job_id);
                                 }
                             }
 
