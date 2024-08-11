@@ -1,0 +1,509 @@
+{
+  "nodes": [
+    {
+      "label": "Get AccessToken",
+      "description": "This is blank script node to help you get started.",
+      "type": "script",
+      "output": { "buildship": {}, "title": "output", "type": "string" },
+      "meta": {
+        "description": "This is blank script node to help you get started. [Full Documentation](https://docs.buildship.com/core-nodes/script).",
+        "id": "9bd8855e-94a4-4cc4-99cc-836e35a34f2c",
+        "name": "Blank Script"
+      },
+      "onFail": null,
+      "inputs": {
+        "properties": {
+          "requestHeaders": {
+            "description": "Request Headers",
+            "pattern": "",
+            "buildship": { "sensitive": false, "index": 0 },
+            "type": "string",
+            "title": "Request headers"
+          }
+        },
+        "type": "object",
+        "required": []
+      },
+      "id": "9bd8855e-94a4-4cc4-99cc-836e35a34f2c",
+      "script": "export default function getBokxKey({\n    requestHeaders\n}) {\n    // Extract the X-Bokx-Key header value from the headers object\n    const accessToken = requestHeaders['X-Bokx-Key'] || '';\n    console.log(accessToken)\n    // Return the access token\n    return accessToken\n  \n}"
+    },
+    {
+      "onFail": null,
+      "type": "script",
+      "inputs": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "description": "supabase access token",
+            "title": "supabase access token",
+            "buildship": { "index": 0, "sensitive": false },
+            "type": "string",
+            "pattern": ""
+          },
+          "SERVICE_KEY": {
+            "default": "",
+            "type": "string",
+            "title": "SERVICE KEY",
+            "buildship": { "sensitive": false, "index": 2 },
+            "description": "Service key used to access the supabase api",
+            "pattern": ""
+          },
+          "SERVICE_URL": {
+            "buildship": { "index": 2, "sensitive": false },
+            "type": "string",
+            "description": "Url to the supabase url",
+            "title": "SERVICE URL",
+            "pattern": "",
+            "default": ""
+          }
+        },
+        "required": []
+      },
+      "output": { "type": "string", "title": "output", "buildship": {} },
+      "script": "import {\n    createClient\n} from '@supabase/supabase-js';\n\nexport default async function fetchSupabaseUserId({\n    accessToken,SERVICE_KEY,SERVICE_URL\n}) {\n    const supabaseUrl = SERVICE_URL;\n    const supabaseServiceKey = SERVICE_KEY;\n      //process.env.SUPABASE_SERVICE_KEY;\n    \n    const supabase = createClient(supabaseUrl, supabaseServiceKey);\n\n    const {\n        data,\n        error\n    } = await supabase.auth.getUser(accessToken);\n\n    if (error) {\n        return {\"bokx_status\":400,\"bokx_msg\":\"user error\"};\n    }\n    \n    const json_data = await supabase.from('Bokx_Metrics').select('bokx_responses_limit,bokx_responses').eq('bokx_user',(data.user.id));\n    const read_error = json_data[\"error\"];\n    const read_json = json_data[\"data\"];\n\n    if (read_error){\n      //throw read_error;\n      return {\"bokx_status\":400};\n    }\n  \n    return {\"bokx_status\":200,\"bokx_details\":read_json[0]};\n  //return supabaseUrl;\n}",
+      "label": "check_user",
+      "id": "bcaab3ca-94c7-4405-b1ad-3c4d6ef8c4ef",
+      "description": "This is blank script node to help you get started.",
+      "meta": {
+        "description": "This is blank script node to help you get started. [Full Documentation](https://docs.buildship.com/core-nodes/script).",
+        "name": "Blank Script",
+        "id": "bcaab3ca-94c7-4405-b1ad-3c4d6ef8c4ef"
+      }
+    },
+    {
+      "meta": {
+        "description": "Make an API call using fetch with provided url, method, contentType, authorization, and body",
+        "icon": {
+          "svg": "<path d=\"m14 12l-2 2l-2-2l2-2l2 2zm-2-6l2.12 2.12l2.5-2.5L12 1L7.38 5.62l2.5 2.5L12 6zm-6 6l2.12-2.12l-2.5-2.5L1 12l4.62 4.62l2.5-2.5L6 12zm12 0l-2.12 2.12l2.5 2.5L23 12l-4.62-4.62l-2.5 2.5L18 12zm-6 6l-2.12-2.12l-2.5 2.5L12 23l4.62-4.62l-2.5-2.5L12 18z\"></path>",
+          "type": "SVG"
+        },
+        "name": "API Call",
+        "id": "api-call"
+      },
+      "label": "API Call",
+      "_libRef": {
+        "libType": "public",
+        "src": "https://storage.googleapis.com/buildship-app-us-central1/publicLib/nodes/@buildship/api-call/1.1.0/build.cjs",
+        "integrity": "v3:0d10568667619289a775dc50761a31cd",
+        "libNodeRefId": "@buildship/api-call",
+        "version": "1.1.0",
+        "isDirty": true
+      },
+      "script": "import fetch from \"node-fetch\";\nexport default async function apiCall({\n    url,\n    supabase_data,\n    method,\n    contentType,\n    authorization,\n    body,\n    job_id,\n    shouldAwait,\n    queryParams\n}: NodeInputs, {\n    logging\n}: NodeScriptOptions): NodeOutput {\n\n    const supabase_status = supabase_data[\"bokx_status\"];\n  \n  \n    if(supabase_status>200){\n      return {\n        \"status\":400,\n        \"message\":\"request failed\"\n      }\n    }\n    const available_requests = supabase_data[\"bokx_details\"][\"bokx_responses_limit\"] - supabase_data[\"bokx_details\"][\"bokx_responses\"];\n\n    if (available_requests <= 0){\n      return {\n        \"status\":400,\n        \"message\":\"out of credits\"\n      }\n    }\n  \n    const headers = {\n        \"Content-Type\": contentType\n    };\n    if (authorization) headers[\"X-API-Key\"] = authorization;\n\n    let queryParamsString = '';\n    if (queryParams) {\n        queryParamsString = '?' + new URLSearchParams(queryParams).toString();\n    }\n\n    const fetchOptions = {\n        method,\n        headers\n    };\n\n    if (method !== 'GET') {\n        fetchOptions.body = JSON.stringify(body);\n    }\n    const active_job = job_id[\"job_id\"];\n  \n    const fetchPromise = fetch(url + active_job, fetchOptions);\n\n    if (!shouldAwait) {\n        return {\n            data: null\n        };\n    }\n\n    const response = await fetchPromise;\n    const data = await response.json();\n    const status_code = response.status\n    \n    if(status_code == 200)\n    {\n      const job_status = data[\"status\"];\n      const returned_data = data[\"outputs\"];\n      \n      const outputs = [];\n      returned_data.forEach(function (returned_datum){\n        outputs.push(returned_datum[\"data\"]);\n      });\n\n      //return outputs;\n      return {\n        \"status\":status_code,\n        \"job_status\":job_status,\n        \"job_id\":active_job,\n        \"outputs\":outputs\n        \n      }\n    }\n    return {\n        \"job_id\":active_job,\n        status: response.status,\n        \n    };\n}",
+      "type": "script",
+      "onFail": null,
+      "inputs": {
+        "properties": {
+          "authorization": {
+            "description": "The X-API-Key header for the API call, if required",
+            "type": "string",
+            "pattern": "",
+            "title": "X-API-Key",
+            "buildship": { "index": 2, "sensitive": false }
+          },
+          "shouldAwait": {
+            "description": "Whether to wait for the request to complete or not",
+            "buildship": { "sensitive": false, "index": 6 },
+            "type": "boolean",
+            "pattern": "",
+            "title": "Await?"
+          },
+          "url": {
+            "buildship": { "index": 1 },
+            "title": "URL",
+            "description": "The URL of the API endpoint",
+            "type": "string"
+          },
+          "contentType": {
+            "enum": [
+              "application/json",
+              "application/x-www-form-urlencoded",
+              "multipart/form-data",
+              "text/plain"
+            ],
+            "description": "The content type of the API call",
+            "buildship": {
+              "options": [
+                { "value": "application/json", "label": "application/json" },
+                {
+                  "value": "application/x-www-form-urlencoded",
+                  "label": "application/x-www-form-urlencoded"
+                },
+                {
+                  "label": "multipart/form-data",
+                  "value": "multipart/form-data"
+                },
+                { "label": "text/plain", "value": "text/plain" }
+              ],
+              "index": 5
+            },
+            "type": "string",
+            "title": "Content Type"
+          },
+          "new_input-1723225967372": {
+            "default": "",
+            "buildship": {
+              "sensitive": false,
+              "index": 0,
+              "options": [
+                { "label": "GET", "value": "GET" },
+                { "label": "POST", "value": "POST" },
+                { "label": "PUT", "value": "PUT" },
+                { "value": "DELETE", "label": "DELETE" },
+                { "label": "PATCH", "value": "PATCH" }
+              ]
+            },
+            "description": "The HTTP method to use for the API call",
+            "pattern": "",
+            "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+            "type": "string",
+            "title": "HTTP Method"
+          },
+          "supabase_data": {
+            "default": "",
+            "type": "object",
+            "pattern": "",
+            "description": "reply from supabase auth",
+            "properties": {},
+            "title": "Supabase Data",
+            "buildship": { "index": 8, "sensitive": false }
+          },
+          "job_id": {
+            "pattern": "",
+            "buildship": { "index": 7, "sensitive": false },
+            "default": "",
+            "title": "Job ID",
+            "description": "SieveData job id",
+            "type": "string"
+          },
+          "body": {
+            "description": "The body to send with the API call",
+            "type": "object",
+            "title": "Body",
+            "buildship": { "index": 4 }
+          },
+          "queryParams": {
+            "properties": {},
+            "title": "Query Parameters",
+            "default": {},
+            "buildship": { "index": 3, "sensitive": false },
+            "description": "The query parameters for the API call.\n\nSAMPLE INPUT:\n```\n{ \n  \"query1\": \"value1\",\n  \"query2\": \"value2\"\n}\n```",
+            "type": "object",
+            "pattern": ""
+          }
+        },
+        "type": "object",
+        "required": ["url", "shouldAwait", "new_input-1723225967372"]
+      },
+      "output": {
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "number",
+            "buildship": { "index": 0 },
+            "description": "The HTTP status of the API response"
+          },
+          "data": {
+            "description": "The data object from the API response",
+            "title": "Data",
+            "type": "object",
+            "buildship": { "index": 1 }
+          },
+          "job_status": {
+            "title": "job status",
+            "buildship": { "index": 2 },
+            "type": "string",
+            "description": ""
+          }
+        },
+        "type": "object",
+        "buildship": {}
+      },
+      "integrations": [],
+      "id": "5df922e5-43e3-410e-aa3d-34095e30b4ca",
+      "dependencies": { "node-fetch": "3.3.2" }
+    },
+    {
+      "type": "return",
+      "inputs": {
+        "properties": {
+          "status": {
+            "description": "The HTTP status code to return",
+            "title": "Status code",
+            "type": "string",
+            "enum": [
+              "200",
+              "201",
+              "202",
+              "204",
+              "400",
+              "401",
+              "403",
+              "404",
+              "429",
+              "500"
+            ],
+            "buildship": {
+              "options": [
+                { "label": "OK (200)", "value": "200" },
+                { "value": "201", "label": "Created (201)" },
+                { "value": "202", "label": "Accepted (202)" },
+                { "label": "Redirect (301)", "value": "301" },
+                { "label": "No Content (204)", "value": "204" },
+                { "value": "400", "label": "Bad Request (400)" },
+                { "value": "401", "label": "Unauthorized (401)" },
+                { "value": "403", "label": "Forbidden (403)" },
+                { "value": "404", "label": "Not Found (404)" },
+                { "value": "429", "label": "Too Many Requests (429)" },
+                { "label": "Internal Server Error (500)", "value": "500" }
+              ],
+              "index": 0
+            },
+            "default": "200"
+          },
+          "cacheMaxAge": {
+            "default": 0,
+            "description": "Set cache duration in seconds",
+            "type": "number",
+            "title": "Cache Time",
+            "buildship": { "index": 2 }
+          },
+          "value": {
+            "default": "",
+            "description": "The value to return",
+            "buildship": { "index": 1 },
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": []
+      },
+      "id": "7e943d99-2889-429e-b74f-a10d6e8ac0c7",
+      "response": { "2XX": { "type": "object", "properties": {} } },
+      "description": "The Return Node is used to return values from the workflow. It is generally the last node in the workflow. The return node is optional as the API can inherently return a 200 OK response by default. [Full Documentation](https://docs.buildship.com/core-nodes/return).",
+      "label": "Return"
+    }
+  ],
+  "trigger": {
+    "script": "export default function(\n    dictionary) {\n    return dictionary[\"job_id\"];\n}",
+    "meta": {
+      "icon": {},
+      "id": "http",
+      "description": "Basic trigger that handles HTTP requests",
+      "name": "Rest API Call"
+    },
+    "dependencies": {},
+    "instruction": {
+      "bodyTemplate": "https://{{runtimeUrl}}/{{httpPath}}",
+      "title": "Endpoint URL"
+    },
+    "order": 1,
+    "groupId": null,
+    "inputs": {
+      "type": "object",
+      "required": ["path", "method"],
+      "properties": {
+        "path": {
+          "description": "Path of the endpoint",
+          "default": "/",
+          "buildship": { "disableExpression": true, "index": 0 },
+          "title": "Path",
+          "type": "string"
+        },
+        "method": {
+          "type": "string",
+          "title": "Method",
+          "enum": ["GET", "POST", "PUT", "DELETE"],
+          "default": "GET",
+          "description": "HTTP method",
+          "buildship": {
+            "index": 1,
+            "options": [
+              { "value": "GET", "label": "GET" },
+              { "label": "POST", "value": "POST" },
+              { "label": "PUT", "value": "PUT" },
+              { "value": "DELETE", "label": "DELETE" }
+            ]
+          }
+        }
+      }
+    },
+    "label": "Rest API Call",
+    "type": "http",
+    "testingSchema": [
+      {
+        "type": "shortText",
+        "name": "endpointURL",
+        "label": "Endpoint URL",
+        "disabled": true,
+        "prefill": "endpointURL"
+      },
+      {
+        "prefill": "apiRequestData",
+        "type": "apiRequestData",
+        "name": "apiRequestData"
+      }
+    ],
+    "live": true,
+    "id": "http",
+    "request": {
+      "type": "object",
+      "buildship": {},
+      "properties": {
+        "query": {
+          "buildship": {},
+          "title": "Query",
+          "type": "object",
+          "description": "Query parameters"
+        },
+        "body": {
+          "type": "object",
+          "title": "Body",
+          "buildship": {},
+          "description": "Body of the request"
+        },
+        "headers": {
+          "buildship": {},
+          "title": "Request Headers",
+          "description": "Headers of the request",
+          "type": "object"
+        }
+      },
+      "required": ["body"],
+      "title": "Request"
+    },
+    "output": {
+      "buildship": {},
+      "type": "object",
+      "title": "Request",
+      "properties": {
+        "body": {
+          "description": "Body of the request",
+          "type": "object",
+          "title": "Body",
+          "buildship": { "index": 1 }
+        },
+        "query": {
+          "description": "Query parameters",
+          "title": "Query parameters",
+          "buildship": { "index": 0 },
+          "type": "object"
+        },
+        "headers": {
+          "buildship": {},
+          "properties": {
+            "authorization": {
+              "buildship": { "index": 1 },
+              "title": "Authorization",
+              "description": "Authorization header",
+              "type": "string"
+            },
+            "content-type": {
+              "buildship": { "index": 0 },
+              "title": "Content-Type",
+              "description": "Content-Type of the request",
+              "type": "string"
+            }
+          },
+          "description": "Headers of the request",
+          "title": "Headers",
+          "type": "object"
+        }
+      }
+    }
+  },
+  "nodeValues": {
+    "57f9ab27-f961-4a80-b710-47fc275042c4": { "method": "", "queryParams": {} },
+    "4f196dad-5366-4df0-84d6-9d94b6128388": { "key": "" },
+    "test-node-b77e83ae-e3d3-47cd-8217-b071e75c7fa4": {
+      "status": "200",
+      "value": ""
+    },
+    "b77e83ae-e3d3-47cd-8217-b071e75c7fa4": {
+      "value": "Hello World 👋",
+      "status": "200"
+    },
+    "test-node-bcaab3ca-94c7-4405-b1ad-3c4d6ef8c4ef": {
+      "new_input-1723226612701": "",
+      "SERVICE_KEY": { "projectEnv": "SUPABASER_SERVICE_KEY" },
+      "SERVICE_": "",
+      "new_input-1723226572452": "",
+      "new_input-1723226446880": "",
+      "accessToken": "",
+      "new_input-1723226567974": "",
+      "SERVICE_URL": { "projectEnv": "SUPABASE_URL" },
+      "new_input-1723226515210": ""
+    },
+    "test-node-643e7007-7aab-4996-a82c-f1f8060e4623": { "message": "hey" },
+    "bcaab3ca-94c7-4405-b1ad-3c4d6ef8c4ef": {
+      "SERVICE_URL": { "projectEnv": "SUPABASE_URL" },
+      "accessToken": { "keys": ["9bd8855e-94a4-4cc4-99cc-836e35a34f2c"] },
+      "SERVICE_KEY": { "projectEnv": "SUPABASER_SERVICE_KEY" }
+    },
+    "7e943d99-2889-429e-b74f-a10d6e8ac0c7": {
+      "value": { "keys": ["5df922e5-43e3-410e-aa3d-34095e30b4ca"] },
+      "cacheMaxAge": 0,
+      "status": "200"
+    },
+    "test-node-4f196dad-5366-4df0-84d6-9d94b6128388": { "key": "" },
+    "test-node-5df922e5-43e3-410e-aa3d-34095e30b4ca": {
+      "authorization": { "projectEnv": "sieveKey" },
+      "queryParams": {},
+      "job_id": {
+        "type": "javascript",
+        "expression": "{\"job_id\":\"\"}\n",
+        "hasErrors": false
+      },
+      "shouldAwait": true,
+      "new_input-1723225967372": "GET",
+      "url": "https://mango.sievedata.com/v2/jobs/",
+      "contentType": "application/json",
+      "supabase_data": {
+        "bokx_status": 200,
+        "bokx_details": { "bokx_responses": 0, "bokx_responses_limit": 50 }
+      }
+    },
+    "http": {
+      "us": "/",
+      "usr": "/",
+      "path": "/bok/model/jobs",
+      "new_input_107db7e6_6cb4_4015_93b6_78b24d3af58b": "/",
+      "method": "POST",
+      "user": "/",
+      "username": "/"
+    },
+    "9bd8855e-94a4-4cc4-99cc-836e35a34f2c": {
+      "requestHeaders": { "keys": ["request", "headers"] }
+    },
+    "1722668951122": {
+      "userInfo": { "userinfo": { "password": "test", "username": "test" } }
+    },
+    "1722704730007": {},
+    "test-node-9bd8855e-94a4-4cc4-99cc-836e35a34f2c": { "requesHeaders": "" },
+    "db7eb5de-5b80-49e1-92c0-2c64a802d3fc": { "queryParams": {}, "method": "" },
+    "be6aa440-1f03-4c6e-9a5a-58ddba0c6ff9": {
+      "maxTokens": 600,
+      "systemPrompt": "",
+      "temperature": 0.5,
+      "model": "gpt-4o",
+      "apiKey": ""
+    },
+    "643e7007-7aab-4996-a82c-f1f8060e4623": { "message": "hey" },
+    "test-node-1722704730007": { "dictionary": { "job_id": "hey" } },
+    "5df922e5-43e3-410e-aa3d-34095e30b4ca": {
+      "supabase_data": { "keys": ["bcaab3ca-94c7-4405-b1ad-3c4d6ef8c4ef"] },
+      "new_input-1723225967372": "GET",
+      "queryParams": {},
+      "url": "https://mango.sievedata.com/v2/jobs/",
+      "authorization": { "projectEnv": "sieveKey" },
+      "job_id": { "keys": ["request", "body"] },
+      "shouldAwait": true,
+      "contentType": "application/json"
+    },
+    "test-node-1722668951122": {
+      "userInfo": { "userinfo": { "password": "test", "username": "test" } }
+    }
+  },
+  "notes": ""
+}

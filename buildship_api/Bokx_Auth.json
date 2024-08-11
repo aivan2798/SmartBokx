@@ -1,0 +1,441 @@
+{
+  "nodes": [
+    {
+      "label": "Get Bokx Key",
+      "output": { "description": "Return the output", "title": "Output" },
+      "script": "export default function getBokxKey({\n    headers\n}) {\n    // Extract the X-Bokx-Key header value from the headers object\n    const accessToken = headers['X-Bokx-Key'] || '';\n    console.log(accessToken)\n    // Return the access token\n    return accessToken\n  \n}",
+      "type": "script",
+      "1722920080486": {
+        "status": "generating",
+        "prompt": "Given request headers object I want to get the authorization key value named X-Bokx-Key and return return the access token.",
+        "message": "Node is being generated"
+      },
+      "onFail": null,
+      "meta": {
+        "description": "Extracts the authorization key value named X-Bokx-Key from the request headers and returns the access token.",
+        "id": "get-bokx-key",
+        "name": "Get Bokx Key"
+      },
+      "1722919515653": {
+        "status": "updated",
+        "update": {
+          "type": "script",
+          "1722919515653": {
+            "message": "Node is being generated",
+            "prompt": "Given user headers from rest api call I want to get the Auth header and return user token.",
+            "status": "generating"
+          },
+          "inputs": {
+            "properties": {
+              "req": {
+                "type": "object",
+                "buildship": { "index": 0 },
+                "required": ["headers"],
+                "properties": {
+                  "headers": {
+                    "required": ["authorization", "Authorization"],
+                    "properties": {
+                      "authorization": {
+                        "type": "string",
+                        "buildship": {
+                          "index": 0,
+                          "userPromptHint": "Provide the authorization header.",
+                          "sensitive": true
+                        }
+                      },
+                      "Authorization": {
+                        "buildship": {
+                          "index": 1,
+                          "userPromptHint": "Provide the Authorization header (case-insensitive).",
+                          "sensitive": true
+                        },
+                        "type": "string"
+                      }
+                    },
+                    "type": "object",
+                    "buildship": { "index": 0 }
+                  }
+                }
+              }
+            },
+            "required": ["req"],
+            "type": "object"
+          },
+          "id": "1722919515653",
+          "label": "Extract User Token",
+          "script": "export default function extractUserToken({\n    req\n}) {\n    const authorization = req.headers[\"authorization\"] || req.headers[\"Authorization\"];\n\n    if (!authorization) {\n        return \"\";\n    }\n\n    const parts = authorization.split(\" \");\n    if (parts.length !== 2 || parts[0] !== \"Bearer\") {\n        return \"\";\n    }\n\n    return parts[1];\n}",
+          "meta": {
+            "id": "extract-user-token",
+            "name": "Extract User Token",
+            "description": "Extracts the user token from the Authorization header in the request."
+          },
+          "output": {}
+        },
+        "message": "Node generated successfully"
+      },
+      "inputs": {
+        "type": "object",
+        "required": ["headers"],
+        "properties": {
+          "headers": { "type": "object", "buildship": { "index": 0 } }
+        }
+      },
+      "id": "1722920080486"
+    },
+    {
+      "type": "script",
+      "1722973573260": {
+        "prompt": "Given an accesstoken I want to use the supabase js api to get the user and return user id.",
+        "message": "Node is being generated",
+        "status": "generating"
+      },
+      "inputs": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "The access token for authenticating with the Supabase API.",
+            "buildship": { "index": 0 }
+          },
+          "SERVICE_KEY": {
+            "title": "SERVICE_KEY",
+            "pattern": "",
+            "type": "string",
+            "buildship": { "sensitive": false, "index": 1 },
+            "description": "",
+            "default": ""
+          },
+          "SUPABASE_URL": {
+            "description": "URL TO THE SUPABASE PROJECT",
+            "buildship": { "sensitive": false, "index": 2 },
+            "default": "",
+            "pattern": "",
+            "type": "string",
+            "title": "SUPABASE URL"
+          }
+        },
+        "required": ["accessToken"]
+      },
+      "output": {},
+      "meta": {
+        "name": "Fetch Supabase User ID",
+        "id": "fetch-supabase-user-id"
+      },
+      "label": "Fetch Supabase User ID",
+      "onFail": null,
+      "id": "1722973573260",
+      "script": "import {\n    createClient\n} from '@supabase/supabase-js';\n\nexport default async function fetchSupabaseUserId({\n    accessToken,SERVICE_KEY,SUPABASE_URL\n}) {\n    const supabaseUrl = SUPABASE_URL;\n    const supabaseServiceKey = SERVICE_KEY;\n      //process.env.SUPABASE_SERVICE_KEY;\n    \n    const supabase = createClient(supabaseUrl, supabaseServiceKey);\n\n    const {\n        data,\n        error\n    } = await supabase.auth.getUser(accessToken);\n\n    if (error) {\n        throw error;\n    }\n\n    return {\"bokx_user\":data.user.id};\n  //return supabaseUrl;\n}"
+    },
+    {
+      "inputs": {
+        "required": [],
+        "properties": {
+          "table": {
+            "description": "Table that supabase will insert to",
+            "type": "string",
+            "pattern": "",
+            "title": "name of table",
+            "buildship": { "index": 0, "sensitive": false }
+          },
+          "supabaseUrl": {
+            "type": "string",
+            "pattern": "",
+            "title": "supabase URL",
+            "buildship": { "sensitive": false, "index": 3 },
+            "description": "URL used for supabase requests",
+            "default": ""
+          },
+          "objectData": {
+            "title": "object data",
+            "default": "",
+            "pattern": "",
+            "description": "data to be inserted into the table",
+            "type": "string",
+            "buildship": { "index": 2, "sensitive": false }
+          },
+          "supabaseKey": {
+            "buildship": { "index": 3, "sensitive": false },
+            "type": "string",
+            "pattern": "",
+            "title": "supabase Key",
+            "default": "",
+            "description": "key used by the supabase client probably service key"
+          }
+        },
+        "type": "object"
+      },
+      "label": "insert new bokx user",
+      "script": "import {\n    createClient\n} from '@supabase/supabase-js';\nexport default async function supabaseInsertObject({\n    table,\n    objectData,\n    supabaseUrl,\n    supabaseKey\n}) {\n    const supabase = createClient(supabaseUrl, supabaseKey);\n    //try {\n        const {data,error} = await supabase.from(table).insert(objectData).select();\n        \n      \n        console.log(\"data\");\n        if(error){\n          return {\"message\":\"User Error\"};\n        }\n        \n        return {\"available_questions\":data[0][\"bokx_request_limit\"],\"available_answers\":data[0][\"bokx_responses_limit\"]};\n   /* } catch (error) {\n        logging.error('Error:', error);\n        console.log(error);\n        return error;\n    }*/\n}",
+      "description": "This is blank script node to help you get started.",
+      "output": {
+        "buildship": { "index": 0 },
+        "type": "object",
+        "properties": {}
+      },
+      "meta": {
+        "name": "Blank Script",
+        "description": "This is blank script node to help you get started. [Full Documentation](https://docs.buildship.com/core-nodes/script).",
+        "id": "9a07410d-dc96-45e9-8175-ca0fffedf27a"
+      },
+      "id": "9a07410d-dc96-45e9-8175-ca0fffedf27a",
+      "onFail": null,
+      "type": "script"
+    },
+    {
+      "id": "9c77b6c1-e171-4bd3-8879-fa9f4bb428f5",
+      "description": "The Return Node is used to return values from the workflow. It is generally the last node in the workflow. The return node is optional as the API can inherently return a 200 OK response by default. [Full Documentation](https://docs.buildship.com/core-nodes/return).",
+      "type": "return",
+      "response": { "2XX": { "type": "object", "properties": {} } },
+      "inputs": {
+        "required": [],
+        "type": "object",
+        "properties": {
+          "value": {
+            "default": "",
+            "buildship": { "index": 1 },
+            "type": "string",
+            "title": "Value",
+            "description": "The value to return"
+          },
+          "cacheMaxAge": {
+            "title": "Cache Time",
+            "type": "number",
+            "buildship": { "index": 2 },
+            "default": 0,
+            "description": "Set cache duration in seconds"
+          },
+          "status": {
+            "default": "200",
+            "type": "string",
+            "buildship": {
+              "index": 0,
+              "options": [
+                { "label": "OK (200)", "value": "200" },
+                { "value": "201", "label": "Created (201)" },
+                { "value": "202", "label": "Accepted (202)" },
+                { "label": "Redirect (301)", "value": "301" },
+                { "label": "No Content (204)", "value": "204" },
+                { "value": "400", "label": "Bad Request (400)" },
+                { "label": "Unauthorized (401)", "value": "401" },
+                { "label": "Forbidden (403)", "value": "403" },
+                { "value": "404", "label": "Not Found (404)" },
+                { "value": "429", "label": "Too Many Requests (429)" },
+                { "value": "500", "label": "Internal Server Error (500)" }
+              ]
+            },
+            "enum": [
+              "200",
+              "201",
+              "202",
+              "204",
+              "400",
+              "401",
+              "403",
+              "404",
+              "429",
+              "500"
+            ],
+            "description": "The HTTP status code to return",
+            "title": "Status code"
+          }
+        }
+      },
+      "label": "Return"
+    }
+  ],
+  "trigger": {
+    "dependencies": {},
+    "script": "",
+    "order": 1,
+    "instruction": {
+      "title": "Endpoint URL",
+      "bodyTemplate": "https://{{runtimeUrl}}/{{httpPath}}"
+    },
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "default": "/",
+          "buildship": { "disableExpression": true, "index": 0 },
+          "title": "Path",
+          "type": "string",
+          "description": "Path of the endpoint"
+        },
+        "method": {
+          "buildship": {
+            "options": [
+              { "label": "GET", "value": "GET" },
+              { "value": "POST", "label": "POST" },
+              { "value": "PUT", "label": "PUT" },
+              { "label": "DELETE", "value": "DELETE" }
+            ],
+            "index": 1
+          },
+          "title": "Method",
+          "type": "string",
+          "description": "HTTP method",
+          "enum": ["GET", "POST", "PUT", "DELETE"],
+          "default": "GET"
+        }
+      },
+      "required": ["path", "method"]
+    },
+    "request": {
+      "properties": {
+        "body": {
+          "description": "Body of the request",
+          "buildship": {},
+          "type": "object",
+          "title": "Body"
+        },
+        "query": {
+          "title": "Query",
+          "type": "object",
+          "description": "Query parameters",
+          "buildship": {}
+        },
+        "headers": {
+          "description": "Headers of the request",
+          "title": "Request Headers",
+          "type": "object",
+          "buildship": {}
+        }
+      },
+      "title": "Request",
+      "type": "object",
+      "required": ["body"],
+      "buildship": {}
+    },
+    "id": "http",
+    "label": "Rest API Call",
+    "output": {
+      "title": "Request",
+      "buildship": {},
+      "type": "object",
+      "properties": {
+        "query": {
+          "title": "Query parameters",
+          "type": "object",
+          "description": "Query parameters",
+          "buildship": { "index": 0 }
+        },
+        "body": {
+          "title": "Body",
+          "description": "Body of the request",
+          "type": "object",
+          "buildship": { "index": 1 }
+        },
+        "headers": {
+          "properties": {
+            "authorization": {
+              "description": "Authorization header",
+              "title": "Authorization",
+              "buildship": { "index": 1 },
+              "type": "string"
+            },
+            "content-type": {
+              "type": "string",
+              "buildship": { "index": 0 },
+              "title": "Content-Type",
+              "description": "Content-Type of the request"
+            }
+          },
+          "buildship": {},
+          "description": "Headers of the request",
+          "type": "object",
+          "title": "Headers"
+        }
+      }
+    },
+    "testingSchema": [
+      {
+        "label": "Endpoint URL",
+        "disabled": true,
+        "type": "shortText",
+        "name": "endpointURL",
+        "prefill": "endpointURL"
+      },
+      {
+        "name": "apiRequestData",
+        "type": "apiRequestData",
+        "prefill": "apiRequestData"
+      }
+    ],
+    "type": "http",
+    "meta": {
+      "id": "http",
+      "description": "Basic trigger that handles HTTP requests",
+      "icon": {},
+      "name": "Rest API Call"
+    },
+    "live": true,
+    "groupId": null
+  },
+  "nodeValues": {
+    "http": { "method": "POST", "path": "/bokx/auth/signup" },
+    "fd8f67d5-7e7e-4620-a94b-c7e615c5e2ec": {
+      "objectData": {
+        "hasErrors": false,
+        "type": "javascript",
+        "expression": "{\"bokx_user\":ctx[\"root\"][\"1722973573260\"]}"
+      },
+      "supabaseKey": { "projectEnv": "SUPABASER_SERVICE_KEY" },
+      "table": "Bokx_Metrics",
+      "supabaseUrl": { "projectEnv": "SUPABASE_URL" }
+    },
+    "4b3a5f19-f42c-45e9-a213-3adbd5dc0045": {
+      "objectData": {},
+      "supabaseKey": { "projectEnv": "SUPABASER_SERVICE_KEY" }
+    },
+    "test-node-1722920080486": { "headers": "" },
+    "20e87f87-bf86-4abd-a973-0636e483d3a5": {
+      "cacheMaxAge": 0,
+      "status": "200",
+      "value": "okay"
+    },
+    "9a07410d-dc96-45e9-8175-ca0fffedf27a": {
+      "objectData": { "keys": ["1722973573260"] },
+      "supabaseUrl": { "projectEnv": "SUPABASE_URL" },
+      "table": "Bokx_Metrics",
+      "supabaseKey": { "projectEnv": "SUPABASER_SERVICE_KEY" }
+    },
+    "test-node-1722973573260": {
+      "SUPABASE_URL": { "projectEnv": "SUPABASE_URL" },
+      "SERVICE_KEY": { "projectEnv": "SUPABASER_SERVICE_KEY" },
+      "accessToken": ""
+    },
+    "test-node-fd8f67d5-7e7e-4620-a94b-c7e615c5e2ec": {
+      "supabaseUrl": { "projectEnv": "SUPABASE_URL" },
+      "supabaseKey": { "projectEnv": "SUPABASER_SERVICE_KEY" },
+      "table": "Bokx_Metrics",
+      "objectData": { "bokx_user": "" }
+    },
+    "9c77b6c1-e171-4bd3-8879-fa9f4bb428f5": {
+      "status": "200",
+      "value": { "keys": ["9a07410d-dc96-45e9-8175-ca0fffedf27a"] },
+      "cacheMaxAge": 0
+    },
+    "1722973573260": {
+      "SERVICE_KEY": { "projectEnv": "SUPABASER_SERVICE_KEY" },
+      "accessToken": { "keys": ["1722920080486"] },
+      "SUPABASE_URL": { "projectEnv": "SUPABASE_URL" }
+    },
+    "1722920080486": { "headers": { "keys": ["request", "headers"] } },
+    "c366e4e5-440f-48cb-b06d-3c714d50f563": {
+      "token": { "projectEnv": "SUPABASER_SERVICE_KEY" },
+      "objectData": {},
+      "supabaseKey": { "projectEnv": "SUPABASER_SERVICE_KEY" }
+    },
+    "test-node-9a07410d-dc96-45e9-8175-ca0fffedf27a": {
+      "table": "Bokx_Metrics",
+      "objectData": {
+        "type": "javascript",
+        "hasErrors": false,
+        "expression": "{\"bokx_user\": \"\"}"
+      },
+      "supabaseUrl": { "projectEnv": "SUPABASE_URL" },
+      "supabaseKey": { "projectEnv": "SUPABASER_SERVICE_KEY" }
+    }
+  },
+  "notes": ""
+}

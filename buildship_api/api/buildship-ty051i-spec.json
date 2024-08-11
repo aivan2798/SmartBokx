@@ -1,0 +1,110 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "version": "1.0.0",
+    "title": "aye's Workspace",
+    "contact": {
+      "url": "https://buildship.com"
+    },
+    "description": "This API has been created using BuildShip."
+  },
+  "servers": [
+    {
+      "url": "https://ty051i.buildship.run"
+    }
+  ],
+  "paths": {
+    "/sieve/model/jobs": {
+      "post": {
+        "x-workflow-id": "gK7n7BjT06gQ4zGo9pw5",
+        "operationId": "post_sieve_model_jobs",
+        "description": "A simple hello world API to get your familiar with BuildShip",
+        "responses": {
+          "2XX": {
+            "description": "A simple hello world API to get your familiar with BuildShip",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "description": "Body of the request",
+                "title": "Body",
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bokx/auth/signup": {
+      "post": {
+        "x-workflow-id": "BnHibjVZD67IhoT3UTjF",
+        "operationId": "post_bokx_auth_signup",
+        "description": "bokx authorization flow",
+        "responses": {
+          "2XX": {
+            "description": "bokx authorization flow",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "description": "Body of the request",
+                "type": "object",
+                "title": "Body"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bokx/model": {
+      "post": {
+        "x-workflow-id": "z01W6zdupUkLy2zpw40h",
+        "operationId": "post_bokx_model",
+        "responses": {
+          "2XX": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "description": "Body of the request",
+                "title": "Body",
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
