@@ -1,0 +1,145 @@
+#main_body {
+    background-color: black;/* #07072d; */
+    color: whitesmoke;
+}
+
+/* Add black borders to all text elements */
+h2, p, a, li {
+    
+    text-shadow: 5px 5px 8px rgb(5, 56, 5); /* Add black shadow to text */
+}
+
+h1{
+    
+    text-shadow: 5px 5px 8px rgb(8, 250, 52); /* Add black shadow to text */
+}
+
+#text_1{
+    text-align: justify;
+    font-size: 0.8em;
+    text-indent: 50px;
+    text-decoration: aliceblue;
+     font-family: 'Comic Sans MS', 
+     cursive, sans-serif; 
+     color: #fee2e2;
+    margin-right: 10%;
+    margin-left: 5%
+}
+
+.nxt_line{
+    margin-left:10px;
+}
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-30px);
+    }
+    60% {
+        transform: translateY(-15px);
+    }
+}
+
+@keyframes xbounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-5px);
+    }
+    60% {
+        transform: translateY(-1px);
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes wobble {
+    0%, 100% {
+        transform: translateX(0%);
+    }
+    15% {
+        transform: translateX(-25%);
+    }
+    30% {
+        transform: translateX(20%);
+    }
+    45% {
+        transform: translateX(-15%);
+    }
+    60% {
+        transform: translateX(10%);
+    }
+    75% {
+        transform: translateX(-5%);
+    }
+}
+
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 80% {
+        transform: translateX(-10px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(10px);
+    }
+}
+
+.bounce {
+    animation: bounce 2s infinite;
+}
+
+.spin {
+    display: inline-block;
+    animation: spin 4s linear infinite;
+}
+
+.wobble {
+    animation: xbounce 2s infinite;
+}
+
+.shake {
+    display: inline-block;
+    animation: shake 10s infinite;
+}
+
+.emoji {
+    margin-left: 5px;
+}
+
+/* Define keyframes for fading animation */
+@keyframes fade {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Add fading animation class */
+.fade {
+    animation: fade 3s infinite;
+}
+
+#about_card {
+    border: 2px solid white;
+    box-shadow: 0 0 10px 2px green;
+    padding: 20px;
+    margin: 20px;
+    
+}
