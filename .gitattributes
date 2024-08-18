@@ -1,2 +1,4 @@
 .apk filter=lfs diff=lfs merge=lfs -text
 *.apk filter=lfs diff=lfs merge=lfs -text
+SmartBokx_Android/app/debug/app-debug.apk filter=lfs diff=lfs merge=lfs -text
+SmartBokx_Android/app/release/app-release.apk filter=lfs diff=lfs merge=lfs -text
