@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
         master_dbHandler = DataConnector.getInstance(getApplicationContext());
         bokxman = DataConnector.getBokxmanInstance();
-        notifier = new Notifier();
+        notifier = new Notifier(getApplicationContext());
         setContentView(R.layout.activity_main);
         sync_btn =(AppCompatButton) findViewById(R.id.toggle_clipboard_service_btn);
         //sync_btn.startAnimation(sync_animation);

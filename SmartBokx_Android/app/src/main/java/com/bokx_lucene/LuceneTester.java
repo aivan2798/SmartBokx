@@ -1,4 +1,4 @@
-package com.tutorialspoint.lucene;
+package com.bokx_lucene;
 
 import java.io.IOException;
 

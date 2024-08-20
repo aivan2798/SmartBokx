@@ -7,7 +7,7 @@ import com.blaqbox.smartbocx.R;
 import com.blaqbox.smartbocx.db.DBHandler;
 import com.blaqbox.smartbocx.db.Note;
 import com.blaqbox.smartbocx.ui.adapters.NotesListAdapter;
-import com.tutorialspoint.lucene.Indexer;
+import com.bokx_lucene.Indexer;
 
 import java.io.File;
 import java.io.IOException;
@@ -78,7 +78,10 @@ public class DataConnector
 
     public static DataConnector getInstance(Context context)
     {
-        db_context = context;
+        if ((db_context!=null)){
+            return data_connector;
+        }
+        db_context = context.getApplicationContext();
         project_key = context.getResources().getString(R.string.supabase_apikey);
         project_url = context.getResources().getString(R.string.supabase_url);
         bokxman = new Bokxman(project_key,project_url);
@@ -91,9 +94,6 @@ public class DataConnector
         all_notes = dbHandler.getNotes();
         all_notes_adapter = new NotesListAdapter(all_notes);
         context_set = true;
-
-
-
 
         if (note_index == null) {
             try {
@@ -139,7 +139,6 @@ public class DataConnector
     public int refresh()
     {
         all_notes_adapter.notifyDataSetChanged();
-
         return all_notes.size();
     }
 
@@ -152,7 +151,10 @@ public class DataConnector
     public void addNewNote(String note_name, String note_link, String note_description)
     {
         dbHandler.addNewNote(note_name,note_link,note_description);
-        all_notes_adapter.notifyDataSetChanged();
+
+        if(all_notes_adapter!=null) {
+            all_notes_adapter.notifyDataSetChanged();
+        }
     }
 
     public List<Note> getAllNotes()

@@ -11,14 +11,14 @@ import com.blaqbox.smartbocx.db.DBHandler;
 import com.blaqbox.smartbocx.utils.Notifier;
 
 public class NoteReceiverActivity extends AppCompatActivity {
-    Notifier note_recv_activity_notifier = new Notifier();
+    Notifier note_recv_activity_notifier;// = new Notifier();
     NotificationManager notification_manager;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        note_recv_activity_notifier = new Notifier(getApplicationContext());
         if (notification_manager == null)
         {
             notification_manager = getSystemService(NotificationManager.class);

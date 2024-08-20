@@ -22,12 +22,12 @@ import com.blaqbox.smartbocx.utils.Notifier;
 
 public class NoteReceiver extends BroadcastReceiver {
     NotificationManager notes_notification_manager = null;
-    Notifier broadcast_notifier = new Notifier();
+    Notifier broadcast_notifier;
 
 
     @Override
     public void onReceive(Context context, Intent intent) {
-
+        broadcast_notifier =  new Notifier(context);
         if (notes_notification_manager == null)
         {
             notes_notification_manager = context.getSystemService(NotificationManager.class);

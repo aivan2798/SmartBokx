@@ -21,9 +21,10 @@ import com.blaqbox.smartbocx.db.DBHandler;
 public class Notifier
 {
     DataConnector db_connector;
-    public Notifier()
+    public Notifier(Context context)
     {
-        db_connector = DataConnector.getInstance();;
+
+        db_connector = DataConnector.getInstance(context);;
     }
     public void showNewNoteNotification(Context context, NotificationManager notes_notification_manager,String note_title, String content)
     {

@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.gotrue.Auth
+import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.gotrue.user.UserSession
@@ -19,10 +20,16 @@ import io.github.jan.supabase.exceptions.BadRequestRestException
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.gotrue.SessionSource
 import io.github.jan.supabase.gotrue.SessionStatus
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.realtime.RealtimeChannel
+import io.github.jan.supabase.realtime.RealtimeChannelBuilder
 import io.github.jan.supabase.realtime.RealtimeRateLimitException
+import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.realtime
 import io.ktor.utils.io.printStack
 import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonPrimitive
+
 
 public class Bokxman(sb_key: String, sb_url: String){
     lateinit var supa_client: SupabaseClient
@@ -31,12 +38,44 @@ public class Bokxman(sb_key: String, sb_url: String){
 
         supa_client = createSupabaseClient(sb_url, sb_key) {
             install(Auth)
+            install(Realtime)
             useHTTPS = true
         }
+        //supa_client.channel("supa_client")
+        //Log.i("subscriptions channel",channel.topic)
+        //var channel = supa_client.realtime.channel("my-channel")
+            /*
+            .on("postgres_changes", {
+                    event, payload ->
+                when (event) {
+                    "INSERT" -> {
+                        // Handle new record
+                        println("New record: $payload")
+                    }
+                    "UPDATE" -> {
+                        // Handle updated record
+                    }
+                    "DELETE" -> {
+                        // Handle deleted record
+                    }
+                }
+            })
+        */
 
+        //Log.i("Channel List",subscriptions)
         GlobalScope.launch {
-            Log.i("started listener","started listening")
 
+            //supa_client.realtime.connect()
+            //Log.i("started listener","started listening")
+            /*channel.subscribe(true)
+            Log.i("finished subscriptions","OK")
+            val subscriptions = supa_client.realtime.subscriptions.entries
+            Log.i("subscriptions account",subscriptions.size.toString())
+            subscriptions.forEach{
+                Log.i("subscriptions key: ",it.key)
+                Log.i("channel_topic",it.value.topic)
+            }*/
+            //supa_client.realtime.
             supa_client.auth.sessionStatus.collect {
                 when(it) {
                     is SessionStatus.Authenticated -> {

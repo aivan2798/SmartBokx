@@ -1,4 +1,4 @@
-package com.tutorialspoint.lucene;
+package com.bokx_lucene;
 
 public class LuceneConstants {
     public static final String CONTENTS = "contents";

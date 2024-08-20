@@ -7,13 +7,17 @@ class BokxBot():
         from sentence_transformers import SentenceTransformer
         from langchain import hub
         from langchain.chat_models import ChatOpenAI
-
+        import os
+        open_ai_key = ""#os.getenv("open_ai_key")
+        os.environ["LANGCHAIN_API_KEY"]=open_ai_key
+        pinecone_key = ""#os.getenv("pinecone_key")
+        print("using open ai: ",open_ai_key," with pinecone: ",pinecone_key)
         self.sentenceTransformer = SentenceTransformer('all-MiniLM-L6-v2')
-        self.pinecone_object = Pinecone(api_key="")
+        self.pinecone_object = Pinecone(api_key=pinecone_key)
         self.smart_bokx_index = self.pinecone_object.Index(name="smartbokx2")
         self.prompt = hub.pull("pwoc517/crafted_prompt_for_rag")
         self.chat_model = ChatOpenAI(
-                openai_api_key="",
+                openai_api_key=open_ai_key,
                 openai_api_base="https://proxy.tune.app/",
                 model_name="meta/llama-3.1-405b-instruct"
         )
@@ -68,6 +72,10 @@ class BokxBot():
         return query_embedding_numpy
 
     def addIndex(self,user_id,note_vectors):
+        print(user_id)
+        user_namespace = self.smart_bokx_index.describe_index_stats().get("namespaces").get(user_id)
+        if user_namespace!=None:
+            self.smart_bokx_index.delete(delete_all=True, namespace=user_id)
         self.smart_bokx_index.upsert(vectors=note_vectors,namespace= user_id)
 
     def searchPinecone(self,user_id,query_embeddings,top_k):

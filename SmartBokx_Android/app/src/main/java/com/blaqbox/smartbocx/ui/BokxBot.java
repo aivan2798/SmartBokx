@@ -1,23 +1,16 @@
 package com.blaqbox.smartbocx.ui;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.service.controls.actions.BooleanAction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -25,38 +18,30 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.blaqbox.smartbocx.Models.QABuilder;
 import com.blaqbox.smartbocx.Models.QAModel;
-import com.blaqbox.smartbocx.Models.QAModel.*;
 import com.blaqbox.smartbocx.R;
 import com.blaqbox.smartbocx.backroom.Bokxman;
 import com.blaqbox.smartbocx.backroom.DataConnector;
-import com.blaqbox.smartbocx.db.Note;
 import com.blaqbox.smartbocx.db.NoteQA;
 import com.blaqbox.smartbocx.ui.adapters.NoteQAAdapter;
-import com.blaqbox.smartbocx.ui.adapters.NotesListAdapter;
 import com.blaqbox.smartbocx.utils.BokxAPIHelper;
 import com.google.android.material.textfield.TextInputEditText;
 
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import com.tutorialspoint.lucene.Searcher;
+
+import com.bokx_lucene.Searcher;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.github.jan.supabase.gotrue.user.UserSession;
 
 
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import okio.Buffer;
-import okio.BufferedSink;
-import com.blaqbox.smartbocx.Models.SieveModel;
+
 import com.blaqbox.smartbocx.Models.SieveBaseModel;
 
 import org.json.JSONArray;

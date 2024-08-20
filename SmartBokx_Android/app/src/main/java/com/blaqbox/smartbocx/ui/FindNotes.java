@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,15 +18,8 @@ import com.blaqbox.smartbocx.backroom.DataConnector;
 import com.blaqbox.smartbocx.db.Note;
 import com.blaqbox.smartbocx.ui.adapters.NotesListAdapter;
 import com.google.android.material.textfield.TextInputEditText;
-import com.tutorialspoint.lucene.LuceneConstants;
-import com.tutorialspoint.lucene.Searcher;
+import com.bokx_lucene.Searcher;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
