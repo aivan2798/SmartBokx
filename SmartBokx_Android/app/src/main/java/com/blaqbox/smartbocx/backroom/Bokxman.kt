@@ -14,18 +14,22 @@ import io.github.jan.supabase.gotrue.user.UserSession
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.GlobalScope
 import androidx.lifecycle.lifecycleScope
+import com.blaqbox.smartbocx.Models.BokxCredits
 import com.blaqbox.smartbocx.ui.BokxBot
 import io.github.jan.supabase.SupabaseClientBuilder
 import io.github.jan.supabase.exceptions.BadRequestRestException
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.gotrue.SessionSource
 import io.github.jan.supabase.gotrue.SessionStatus
+import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.realtime.RealtimeChannel
 import io.github.jan.supabase.realtime.RealtimeChannelBuilder
 import io.github.jan.supabase.realtime.RealtimeRateLimitException
 import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.realtime
+import io.ktor.util.Identity.decode
 import io.ktor.utils.io.printStack
 import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonPrimitive
@@ -39,6 +43,7 @@ public class Bokxman(sb_key: String, sb_url: String){
         supa_client = createSupabaseClient(sb_url, sb_key) {
             install(Auth)
             install(Realtime)
+            install(Postgrest)
             useHTTPS = true
         }
         //supa_client.channel("supa_client")
@@ -131,6 +136,17 @@ public class Bokxman(sb_key: String, sb_url: String){
     fun getUserSession():UserSession?{
         var user_session = supa_client.auth.currentSessionOrNull()
         return user_session
+    }
+
+    fun getUserCredits(bokx_credits: MutableLiveData<BokxCredits>){
+        GlobalScope.launch {
+            var db_result = supa_client.from("Bokx_Metrics").select(Columns.list("bokx_requests","bokx_request_limit","bokx_responses","bokx_responses_limit")).decodeSingle<BokxCredits>()
+            //DataConnector.getInstance().setCredits(db_result)
+            Log.i("user credits are: ",db_result.bokx_request_limit.toString())
+            bokx_credits.postValue(db_result)
+
+        }
+
     }
 
     fun loginUser(sb_context: Context,user_email: String, user_password: String,auth_status_bot: MutableLiveData<String>,has_auth: MutableLiveData<Boolean>){

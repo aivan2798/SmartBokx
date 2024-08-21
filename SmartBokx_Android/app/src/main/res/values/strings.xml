@@ -21,4 +21,5 @@
     <string name="bokx_post_url">https://ty051i.buildship.run/bokx/model</string>
     <string name="bokx_auth_url">https://ty051i.buildship.run/bokx/auth/signup</string>
     <string name="bokx_base_url">https://ty051i.buildship.run/bokx</string>
+    <string name="bokx_rewared_ad_id">/21775744923/example/rewarded</string>
 </resources>

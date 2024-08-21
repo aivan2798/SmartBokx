@@ -16,6 +16,7 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.blaqbox.smartbocx.Models.BokxCredits;
 import com.blaqbox.smartbocx.Models.QABuilder;
 import com.blaqbox.smartbocx.Models.QAModel;
 import com.blaqbox.smartbocx.R;
@@ -24,6 +25,14 @@ import com.blaqbox.smartbocx.backroom.DataConnector;
 import com.blaqbox.smartbocx.db.NoteQA;
 import com.blaqbox.smartbocx.ui.adapters.NoteQAAdapter;
 import com.blaqbox.smartbocx.utils.BokxAPIHelper;
+import com.google.android.gms.ads.AbstractAdRequestBuilder;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.OnUserEarnedRewardListener;
+import com.google.android.gms.ads.admanager.AdManagerAdRequest;
+import com.google.android.gms.ads.rewarded.RewardItem;
+import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
+import com.google.android.gms.ads.rewarded.ServerSideVerificationOptions;
 import com.google.android.material.textfield.TextInputEditText;
 
 
@@ -66,10 +75,11 @@ public class BokxBot extends Fragment {
     //OkHttpClient okhttp;
     MutableLiveData<String> auth_status = new MutableLiveData<String>();
 
-
+    RewardedAd rewardedAd;
     boolean model_free = true;
 
     MutableLiveData<Boolean> has_auth = new MutableLiveData<Boolean>();
+    MutableLiveData<BokxCredits> bokx_credits = new MutableLiveData<>();
     public BokxBot() {
         // Required empty public constructor
 
@@ -79,6 +89,7 @@ public class BokxBot extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        loadAd();
         bokxman = DataConnector.getBokxmanInstance();
         String bokx_url = getResources().getString(R.string.bokx_base_url);
         user_session = bokxman.getUserSession();
@@ -88,6 +99,16 @@ public class BokxBot extends Fragment {
             @Override
             public void onChanged(String s) {
                 ((TextView)find_notes_view.findViewById(R.id.auth_status)).setText(s);
+            }
+        });
+
+        bokx_credits.observe(getViewLifecycleOwner(), new Observer<BokxCredits>() {
+            @Override
+            public void onChanged(BokxCredits credits) {
+                ((TextView)find_notes_view.findViewById(R.id.request_current_count)).setText(String.valueOf(credits.getBokx_requests()));
+                ((TextView)find_notes_view.findViewById(R.id.request_initial_count)).setText(String.valueOf(credits.getBokx_request_limit()));
+                ((TextView)find_notes_view.findViewById(R.id.response_current_count)).setText(String.valueOf(credits.getBokx_responses()));
+                ((TextView)find_notes_view.findViewById(R.id.response_initial_count)).setText(String.valueOf(credits.getBokx_responses_limit()));
             }
         });
 
@@ -104,6 +125,7 @@ public class BokxBot extends Fragment {
         });
 
         if(user_session!=null) {
+            bokxman.getUserCredits(bokx_credits);
             bokxAPIHelper = new BokxAPIHelper(bokx_url,user_session.getAccessToken());
             //okhttp = new OkHttpClient();
 
@@ -123,6 +145,7 @@ public class BokxBot extends Fragment {
 
             notes_results.setAdapter(note_results_adapter);
             find_notes_btn.setOnClickListener(this::runModel);
+            find_notes_view.findViewById(R.id.add_credits_btn).setOnClickListener(this::showRewardedAd);
 
 
             return find_notes_view;
@@ -162,10 +185,53 @@ public class BokxBot extends Fragment {
         bokxman.loginUser(getContext(),user_email,user_password,auth_status,has_auth);
     }
 
+    public void showRewardedAd(View vw){
+
+
+        if (rewardedAd != null) {
+            //Activity activityContext = MainActivity.this;
+            rewardedAd.show(this.getActivity(), new OnUserEarnedRewardListener() {
+                @Override
+                public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
+                    // Handle the reward.
+                    Log.d("REWARED STATUS", "The user earned the reward.");
+                    int rewardAmount = rewardItem.getAmount();
+                    String rewardType = rewardItem.getType();
+                    Log.d("REWARED AMOUNT", "The user earned the reward amount of: "+rewardAmount);
+                    Log.d("REWARED TYPE", "The user earned the reward type of: "+rewardType);
+                }
+            });
+        } else {
+            Log.d("REWARD STATUS", "The rewarded ad wasn't ready yet.");
+        }
+        loadAd();
+    }
+
     public void signupCallback()
     {
 
     }
+
+    public void loadAd(){
+        AdManagerAdRequest adRequest = new AdManagerAdRequest.Builder().build();
+
+        RewardedAd.load(this.getContext(), getString(R.string.bokx_rewared_ad_id), adRequest, new RewardedAdLoadCallback() {
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                super.onAdFailedToLoad(loadAdError);
+                Log.i("Ad status","ad failed");
+            }
+
+            @Override
+            public void onAdLoaded(@NonNull RewardedAd xrewardedAd) {
+                super.onAdLoaded(xrewardedAd);
+
+                Log.i("Ad status","adloaded");
+                rewardedAd = xrewardedAd;
+            }
+        });
+    }
+
 
     public void updateAuthStatus(String auth_status){
         ((TextView)find_notes_view.findViewById(R.id.auth_status)).setText(auth_status);

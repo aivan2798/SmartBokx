@@ -11,4 +11,6 @@
     <color name="content_background">#E3E0E0</color>
     <color name="subtitle_name">#5DADEA</color>
     <color name="content_deep_color">#040242</color>
+    <color name="results_main_background">#3A3636</color>
+    <color name="results_alt_background">#BBBAC6</color>
 </resources>

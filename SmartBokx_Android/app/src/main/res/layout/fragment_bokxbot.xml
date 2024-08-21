@@ -12,19 +12,94 @@
         android:orientation="vertical"
 
 
-        android:background="#3A3636"
+        android:background="@color/black"
 
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <!-- TODO: Update blank fragment layout -->
-        <TextView
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:gravity="center_vertical"
+            android:background="@color/black"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:fontFamily="sans-serif-condensed"
-            android:text="ASK BOKX" />
+            android:layout_width="match_parent">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-condensed"
+                android:text="BOKX STATUS: " />
+            <TextView
+                android:text=""
+                android:layout_marginLeft="10dp"
+                android:background="@android:drawable/arrow_up_float"
+                android:backgroundTintMode="multiply"
+                android:backgroundTint="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/request_current_count"
+                android:text="_ _"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:text="/"
+                android:layout_marginLeft="1dp"
+                android:textColor="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/request_initial_count"
+                android:text="_ _"
+                android:layout_marginLeft="1dp"
+                android:textColor="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
+            <TextView
+                android:text=""
+
+                android:layout_marginLeft="50dp"
+                android:background="@android:drawable/arrow_down_float"
+                android:backgroundTintMode="multiply"
+                android:backgroundTint="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/response_current_count"
+                android:text="_ _"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:text="/"
+                android:layout_marginLeft="1dp"
+                android:textColor="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/response_initial_count"
+                android:text="_ _"
+                android:layout_marginLeft="1dp"
+                android:textColor="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <LinearLayout
+                android:gravity="right"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/add_credits_btn"
+                    android:text="ADD CREDITS"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/content_deep_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </LinearLayout>
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/find_notes_inputlayout"
             android:layout_marginTop="5dp"
@@ -87,11 +162,11 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/notes_results_view"
-            android:elevation="10dp"
-            android:background="@drawable/curved_background"
-            android:backgroundTint="@color/gray_600"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:background="@drawable/curved_background"
+            android:backgroundTint="#3A3636"
+            android:elevation="10dp" />
         <!--android:backgroundTint="#BBBAC6"-->
         <!--/androidx.appcompat.widget.AppCompatButton-->
     </LinearLayout>

@@ -1,8 +1,12 @@
 package com.blaqbox.smartbocx.backroom;
 
 import android.content.Context;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
+
+import com.blaqbox.smartbocx.Models.BokxCredits;
 import com.blaqbox.smartbocx.R;
 import com.blaqbox.smartbocx.db.DBHandler;
 import com.blaqbox.smartbocx.db.Note;
@@ -29,14 +33,20 @@ public class DataConnector
     private static Indexer note_index;
     private static final DataConnector data_connector  = new DataConnector();
 
+    private static BokxCredits user_credits;
 
+    private static LiveData<BokxCredits> bokx_credits;
+
+    private static TextToSpeech tts_module;
     private DataConnector()
     {
         all_notes  = new ArrayList<Note>();
 
     }
 
-
+    public void setCredits(BokxCredits credits){
+        user_credits = credits;
+    }
     public static Bokxman getBokxmanInstance()
     {
         return bokxman;
@@ -82,6 +92,12 @@ public class DataConnector
             return data_connector;
         }
         db_context = context.getApplicationContext();
+        tts_module = new TextToSpeech(db_context, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                Log.i("TTS Status: ", "initialised tts status "+status);
+            }
+        });
         project_key = context.getResources().getString(R.string.supabase_apikey);
         project_url = context.getResources().getString(R.string.supabase_url);
         bokxman = new Bokxman(project_key,project_url);
@@ -135,6 +151,22 @@ public class DataConnector
     public int searchNotes(List<Note> note_results,String query) {
         return dbHandler.searchNotes(note_results,query);
     }
+
+    public void speakMan(String text_to_say){
+        tts_module.speak(text_to_say,TextToSpeech.QUEUE_FLUSH,null,"");
+    }
+
+    public static void speakManStatic(String text_to_say){
+        tts_module.speak(text_to_say,TextToSpeech.QUEUE_FLUSH,null,"");
+    }
+
+    public void killTTS() {
+        if (tts_module != null) {
+            tts_module.stop();
+            tts_module.shutdown();
+        }
+    }
+
 
     public int refresh()
     {

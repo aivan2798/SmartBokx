@@ -392,4 +392,11 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        master_dbHandler.killTTS();
+        super.onDestroy();
+
+    }
 }

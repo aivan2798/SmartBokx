@@ -9,14 +9,15 @@
 
     <LinearLayout
         android:orientation="vertical"
-        android:background="@drawable/curved_background"
-        android:backgroundTint="@color/content_background"
+
+        android:background="#0A1122"
 
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     <!-- TODO: Update blank fragment layout -->
         <TextView
             android:layout_width="match_parent"
+            android:textColor="@color/white"
             android:layout_height="wrap_content"
             android:text="Find Notes" />
 
@@ -84,7 +85,7 @@
             android:id="@+id/notes_results_view"
             android:elevation="10dp"
             android:background="@drawable/curved_background"
-            android:backgroundTint="#BBBAC6"
+            android:backgroundTint="@color/results_main_background"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 

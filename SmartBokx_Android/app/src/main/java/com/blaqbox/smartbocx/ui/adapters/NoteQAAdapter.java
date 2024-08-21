@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.blaqbox.smartbocx.R;
+import com.blaqbox.smartbocx.backroom.DataConnector;
 import com.blaqbox.smartbocx.db.Note;
 import com.blaqbox.smartbocx.db.NoteQA;
 import com.blaqbox.smartbocx.ui.viewholders.NoteQAListViewHolder;
@@ -25,6 +26,7 @@ public class NoteQAAdapter extends RecyclerView.Adapter<NoteQAListViewHolder>{
     Context context;
     Animation bokx_reply_animation;
     View note_summary_view;
+    TextView active_note;
     public NoteQAAdapter(List<NoteQA> notes_list)
     {
         all_notes = notes_list;
@@ -38,10 +40,30 @@ public class NoteQAAdapter extends RecyclerView.Adapter<NoteQAListViewHolder>{
 
         note_summary_view = layoutInflater.inflate(R.layout.note_qa_view,viewParent,false);
         bokx_loader_icon = note_summary_view.findViewById(R.id.bokx_reply_icon);
-
+        note_summary_view.findViewById(R.id.note_speak).setOnClickListener(this::speakNote);
+        active_note = note_summary_view.findViewById(R.id.note_answer);
         return new NoteQAListViewHolder(note_summary_view);
     }
 
+    public void speakNote(View vw){
+
+
+        String note_answer = active_note.getText().toString();
+        if(note_answer!=null){
+
+            if(note_answer.length()>0)
+            {
+                DataConnector.speakManStatic(note_answer);
+            }
+            else{
+                DataConnector.speakManStatic("No note now");
+            }
+        }
+        else{
+            DataConnector.speakManStatic("No note answer now");
+        }
+
+    }
     @Override
     public void onBindViewHolder(NoteQAListViewHolder viewHolder, int view_position)
     {
