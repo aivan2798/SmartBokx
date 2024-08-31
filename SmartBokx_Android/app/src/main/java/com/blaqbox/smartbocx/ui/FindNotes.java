@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -103,5 +104,17 @@ public class FindNotes extends Fragment {
         note_results_adapter.notifyDataSetChanged();
         Toast.makeText(getContext(),"Looking for Note: "+query_string+"__with hits: ",Toast.LENGTH_LONG).show();
 
+    }
+
+    public void refreshFragment()
+    {
+        if((getActivity()!=null)&&isAdded()){
+            FragmentManager fm = getFragmentManager();
+            Log.i("FM STATUS FindNotes","FM NOT NULL");
+            fm.beginTransaction().detach(this).attach(this).commit();
+        }
+        else{
+            Log.i("FM STATUS","FM IS NULL");
+        }
     }
 }

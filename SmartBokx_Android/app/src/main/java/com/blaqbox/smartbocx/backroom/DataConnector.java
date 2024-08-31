@@ -3,8 +3,10 @@ package com.blaqbox.smartbocx.backroom;
 import android.content.Context;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.util.MutableBoolean;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.blaqbox.smartbocx.Models.BokxCredits;
 import com.blaqbox.smartbocx.R;
@@ -17,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.github.jan.supabase.gotrue.user.UserSession;
 
 public class DataConnector
 {
@@ -36,12 +40,19 @@ public class DataConnector
     private static BokxCredits user_credits;
 
     private static LiveData<BokxCredits> bokx_credits;
+    private static MutableLiveData<Boolean> auth_status;
 
+    private static UserSession current_session;
     private static TextToSpeech tts_module;
+    private static String session_string;
     private DataConnector()
     {
         all_notes  = new ArrayList<Note>();
 
+    }
+
+    public static UserSession getUserSession(){
+        return  current_session;
     }
 
     public void setCredits(BokxCredits credits){
@@ -49,6 +60,15 @@ public class DataConnector
     }
     public static Bokxman getBokxmanInstance()
     {
+
+
+        return bokxman;
+    }
+
+    public Bokxman getABokxmanInstance()
+    {
+
+
         return bokxman;
     }
 
@@ -86,6 +106,18 @@ public class DataConnector
         return data_connector;
     }
 
+    public static MutableLiveData<Boolean> getAuthStatus() {
+        return auth_status;
+    }
+
+    public static void setSession_string(String session_string) {
+        DataConnector.session_string = session_string;
+    }
+
+    public static void setUserSession(UserSession userSession){
+        DataConnector.current_session = userSession;
+    }
+
     public static DataConnector getInstance(Context context)
     {
         if ((db_context!=null)){
@@ -98,9 +130,19 @@ public class DataConnector
                 Log.i("TTS Status: ", "initialised tts status "+status);
             }
         });
-        project_key = context.getResources().getString(R.string.supabase_apikey);
+        project_key = db_context.getResources().getString(R.string.supabase_apikey);
         project_url = context.getResources().getString(R.string.supabase_url);
-        bokxman = new Bokxman(project_key,project_url);
+        auth_status = new MutableLiveData<Boolean>(false);
+        bokxman = new Bokxman(project_key,project_url,auth_status);
+        UserSession xcurrent_session = bokxman.getUserSession();
+
+        if(current_session!=null){
+            Log.i("static session",current_session.getAccessToken());
+        }
+        else{
+            Log.i("static session","static session null");
+        }
+
         dbHandler = new DBHandler(db_context,all_notes);
         boolean is_okay = dbHandler.checkTable();
         if(is_okay==false)
@@ -110,7 +152,7 @@ public class DataConnector
         all_notes = dbHandler.getNotes();
         all_notes_adapter = new NotesListAdapter(all_notes);
         context_set = true;
-
+        /*
         if (note_index == null) {
             try {
                 String data_path = db_context.getExternalFilesDir(null).getPath();
@@ -135,6 +177,7 @@ public class DataConnector
         {
             Log.i("Indexer status: ","Indexer already instantiated");
         }
+        */
         return data_connector;
     }
 
@@ -146,6 +189,7 @@ public class DataConnector
     {
         return all_notes_adapter;
     }
+
 
 
     public int searchNotes(List<Note> note_results,String query) {

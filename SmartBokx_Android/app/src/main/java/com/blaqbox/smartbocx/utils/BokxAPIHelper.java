@@ -8,6 +8,7 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import com.blaqbox.smartbocx.Models.BokxJob;
 import com.blaqbox.smartbocx.R;
@@ -35,6 +36,7 @@ public class BokxAPIHelper {
     public void setBokxCallback(Callback bokx_callback) {
         this.bokx_callback = bokx_callback;
     }
+
 
     public void pushJob(String bokx_json)
     {
@@ -68,6 +70,29 @@ public class BokxAPIHelper {
         }
         catch(Exception ioe){
             Log.e("Get Job error",ioe.getMessage());
+        }
+    }
+
+    public Response auth(){
+
+
+        try {
+            Log.i("Bokx_url",bokx_url+"/auth/signup");
+            Request request = new Request.Builder().url(bokx_url+"/auth/signup").header("x-bokx-key", bokx_api_key).get().build();
+
+            Response auth_response = bokxHttpClient.newCall(request).execute();
+            int response_code = auth_response.code();
+            //String message = auth_response.body().string();
+            Log.i("Auth_STATUS","Auth Status Sent: "+response_code);
+            //Log.i("Auth_Message",message);
+            return auth_response;
+
+        }
+        catch(Exception ioe){
+            ioe.printStackTrace();
+            Log.i("Get Auth",""+ioe.getMessage());
+            return null;
+
         }
     }
 }

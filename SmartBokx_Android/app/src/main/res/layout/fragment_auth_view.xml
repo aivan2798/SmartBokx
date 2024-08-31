@@ -5,10 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:minWidth="300dp"
-    android:orientation="vertical"
-    android:background="@drawable/curved_background"
+    android:background="@color/results_main_background"
+    android:gravity="center">
+ <LinearLayout
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/curved_background"
 
-    android:backgroundTint="@color/content_background"
+
     tools:context=".AddNote">
     <!-- TODO: Update blank fragment layout -->
     <TextView
@@ -41,7 +48,7 @@
         android:theme="@style/EditTextThemeOverlay"
         android:layout_marginBottom="5dp"
         android:textColorHint="@color/black"
-        app:hintTextColor="@color/light_blue_600"
+        app:hintTextColor="@color/content_deep_color"
         app:boxStrokeColor="@color/input_box_colors"
         android:tooltipText="Your email address"
         android:layout_width="match_parent"
@@ -64,13 +71,14 @@
         android:layout_marginTop="5dp"
         android:theme="@style/EditTextThemeOverlay"
         android:textColorHint="@color/black"
-        app:hintTextColor="@color/light_blue_600"
+        app:hintTextColor="@color/content_deep_color"
         android:layout_marginBottom="5dp"
         app:passwordToggleDrawable="@android:drawable/ic_menu_view"
         app:passwordToggleEnabled="true"
         app:passwordToggleTint="@color/black"
         app:passwordToggleTintMode="multiply"
         app:boxStrokeColor="@color/input_box_colors"
+
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <com.google.android.material.textfield.TextInputEditText
@@ -80,7 +88,7 @@
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
             android:gravity="top|start"
-
+            android:minHeight="50dp"
             android:textColor="@color/black"
             android:hint="Your Password"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"/>
@@ -136,5 +144,5 @@
             android:layout_marginBottom="50dp"
             android:text="Login"/>
     </LinearLayout>
-
+  </LinearLayout>
 </LinearLayout>

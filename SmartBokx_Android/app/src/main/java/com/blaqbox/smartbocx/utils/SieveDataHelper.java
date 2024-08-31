@@ -43,7 +43,7 @@ public class SieveDataHelper {
             sieveHttpClient.newCall(request).enqueue(sieve_callback);
         }
         catch(Exception ioe){
-
+            Log.i("sieve error",ioe.getMessage());
         }
     }
 

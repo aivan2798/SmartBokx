@@ -1,21 +1,29 @@
 package com.blaqbox.smartbocx.ui;
 
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.blaqbox.smartbocx.MainActivity;
 import com.blaqbox.smartbocx.Models.BokxCredits;
 import com.blaqbox.smartbocx.Models.QABuilder;
 import com.blaqbox.smartbocx.Models.QAModel;
@@ -26,7 +34,9 @@ import com.blaqbox.smartbocx.db.NoteQA;
 import com.blaqbox.smartbocx.ui.adapters.NoteQAAdapter;
 import com.blaqbox.smartbocx.utils.BokxAPIHelper;
 import com.google.android.gms.ads.AbstractAdRequestBuilder;
+import com.google.android.gms.ads.AdValue;
 import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.OnPaidEventListener;
 import com.google.android.gms.ads.OnUserEarnedRewardListener;
 import com.google.android.gms.ads.admanager.AdManagerAdRequest;
 import com.google.android.gms.ads.rewarded.RewardItem;
@@ -49,11 +59,13 @@ import io.github.jan.supabase.gotrue.user.UserSession;
 
 
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okio.Buffer;
 
 import com.blaqbox.smartbocx.Models.SieveBaseModel;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -74,41 +86,95 @@ public class BokxBot extends Fragment {
     BokxAPICallBack bokxAPICallBack;
     //OkHttpClient okhttp;
     MutableLiveData<String> auth_status = new MutableLiveData<String>();
-
+    TextView auth_status_view;
+    ServerSideVerificationOptions serverSideVerificationOptions;
     RewardedAd rewardedAd;
     boolean model_free = true;
 
     MutableLiveData<Boolean> has_auth = new MutableLiveData<Boolean>();
+
     MutableLiveData<BokxCredits> bokx_credits = new MutableLiveData<>();
+    AlertDialog alertDialog;
+    Animation faded_animation;
     public BokxBot() {
         // Required empty public constructor
 
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.i("FRAGMENT STARTED","Fragment started");
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         loadAd();
+        Log.i("FRAG","FRAGMENT RELOADED");
         bokxman = DataConnector.getBokxmanInstance();
         String bokx_url = getResources().getString(R.string.bokx_base_url);
         user_session = bokxman.getUserSession();
-
+        Boolean login_stats = DataConnector.getAuthStatus().getValue();
+        faded_animation = AnimationUtils.loadAnimation(this.getContext(),R.anim.faded);
+        alertDialog = new AlertDialog.Builder(this.getContext(),R.style.BokxDialogTheme).create();
 
         auth_status.observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(String s) {
-                ((TextView)find_notes_view.findViewById(R.id.auth_status)).setText(s);
+                Log.i("AUTH_STATUS","auth status has changed");
+                auth_status_view.clearAnimation();
+                /*
+                try {
+
+
+                    if (user_session == null) {
+
+                        auth_status_view.setText(s);
+                        Response credict = bokxAPIHelper.auth();
+                        ResponseBody credits_body = credict.body();
+                        JSONObject json_cedits = new JSONObject(credits_body.string());
+                        int status = json_cedits.getInt("available_questions");
+
+                        if(status==200)
+                        {
+                            String available_qn = ""+json_cedits.getInt("available_questions");
+                            String available_ans = ""+json_cedits.getInt("available_answers");
+                            showDialog("Auth Ok","User Authorized");
+                            bokxman.getUserCredits(bokx_credits);
+                        }
+                        else{
+                            String available_qn = ""+json_cedits.getString("message");
+                            showDialog("Auth Not Ok",available_qn);
+                        }
+
+                    }
+
+                }
+                catch(IOException ioe){
+                    alertDialog.setTitle("CONNECTION ERROR");
+                    alertDialog.setMessage("Internal error");
+                    alertDialog.show();
+                }
+                catch(JSONException joe){
+                    alertDialog.setTitle("DATA ERROR");
+                    alertDialog.setMessage("Couldn't parse data");
+                    alertDialog.show();
+                }
+                */
             }
         });
 
         bokx_credits.observe(getViewLifecycleOwner(), new Observer<BokxCredits>() {
             @Override
             public void onChanged(BokxCredits credits) {
-                ((TextView)find_notes_view.findViewById(R.id.request_current_count)).setText(String.valueOf(credits.getBokx_requests()));
-                ((TextView)find_notes_view.findViewById(R.id.request_initial_count)).setText(String.valueOf(credits.getBokx_request_limit()));
-                ((TextView)find_notes_view.findViewById(R.id.response_current_count)).setText(String.valueOf(credits.getBokx_responses()));
-                ((TextView)find_notes_view.findViewById(R.id.response_initial_count)).setText(String.valueOf(credits.getBokx_responses_limit()));
+
+                if (user_session != null) {
+                    ((TextView) find_notes_view.findViewById(R.id.request_current_count)).setText(String.valueOf(credits.getBokx_requests()));
+                    ((TextView) find_notes_view.findViewById(R.id.request_initial_count)).setText(String.valueOf(credits.getBokx_request_limit()));
+                    ((TextView) find_notes_view.findViewById(R.id.response_current_count)).setText(String.valueOf(credits.getBokx_responses()));
+                    ((TextView) find_notes_view.findViewById(R.id.response_initial_count)).setText(String.valueOf(credits.getBokx_responses_limit()));
+                }
             }
         });
 
@@ -118,13 +184,16 @@ public class BokxBot extends Fragment {
                 Log.i("auth bool",s.toString());
 
                 if(s==true){
-                    refreshFragment();
+                    //refreshFragment();
                 }
 
             }
         });
 
         if(user_session!=null) {
+            String user_id = user_session.getUser().getId();
+            Log.i("using user id: ",user_id);
+            serverSideVerificationOptions = new ServerSideVerificationOptions.Builder().setUserId(user_id).build();
             bokxman.getUserCredits(bokx_credits);
             bokxAPIHelper = new BokxAPIHelper(bokx_url,user_session.getAccessToken());
             //okhttp = new OkHttpClient();
@@ -150,27 +219,56 @@ public class BokxBot extends Fragment {
 
             return find_notes_view;
         }
+        Log.i("using user id: ","NULL");
         find_notes_view = inflater.inflate(R.layout.fragment_auth_view, container, false);
         find_notes_view.findViewById(R.id.create_user_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                auth_status_view.setText("Creating Session, Please wait ..... ");
+                auth_status_view.startAnimation(faded_animation);
                 createNewUser(v);
             }
         });
+        auth_status_view = ((TextView) find_notes_view.findViewById(R.id.auth_status));
 
         find_notes_view.findViewById(R.id.login_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                auth_status_view.setText("Creating Session, Please wait ..... ");
+                auth_status_view.startAnimation(faded_animation);
                 loginUser(v);
             }
         });
         return find_notes_view;
     }
 
+    public void showDialog(String dialog_title,String dialog_msg){
+        alertDialog.setTitle(dialog_title);
+        alertDialog.setMessage(dialog_msg);
+        alertDialog.show();
+    }
     public void refreshFragment()
     {
-        getFragmentManager().beginTransaction().detach(this).attach(this).commit();
+
+        if(isAdded()){
+
+
+            Log.i("FM STATUS BokxBot","FM NOT NULL");
+            //getFragmentManager().beginTransaction().detach(this);
+            //getFragmentManager().beginTransaction().attach(this).commit();
+            FragmentTransaction at = getFragmentManager().beginTransaction();
+            FragmentTransaction dt = getFragmentManager().beginTransaction();
+            //t.setAllowOptimization(false);
+            dt.detach(this);
+            at.attach(this);
+            dt.commit();
+            at.commit();
+        }
+        else{
+            Log.i("FM STATUS BokxBot","FM IS NULL");
+        }
     }
+
     public void createNewUser(View vw){
         String user_email = ((TextInputEditText)(find_notes_view.findViewById(R.id.email_text))).getText().toString();
         String user_password = ((TextInputEditText)(find_notes_view.findViewById(R.id.user_password))).getText().toString();
@@ -189,16 +287,26 @@ public class BokxBot extends Fragment {
 
 
         if (rewardedAd != null) {
+            ServerSideVerificationOptions ssvo = new ServerSideVerificationOptions.Builder().build();
+
             //Activity activityContext = MainActivity.this;
             rewardedAd.show(this.getActivity(), new OnUserEarnedRewardListener() {
                 @Override
                 public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
+
                     // Handle the reward.
                     Log.d("REWARED STATUS", "The user earned the reward.");
                     int rewardAmount = rewardItem.getAmount();
                     String rewardType = rewardItem.getType();
                     Log.d("REWARED AMOUNT", "The user earned the reward amount of: "+rewardAmount);
                     Log.d("REWARED TYPE", "The user earned the reward type of: "+rewardType);
+                    int bokx_requests = bokx_credits.getValue().getBokx_requests();
+                    int bokx_request_limit = bokx_credits.getValue().getBokx_request_limit()+1;
+                    int bokx_responses = bokx_credits.getValue().getBokx_responses();
+                    int bokx_responses_limit = bokx_credits.getValue().getBokx_responses_limit()+1;
+                    bokx_credits.postValue(new BokxCredits(bokx_requests,bokx_request_limit,bokx_responses,bokx_responses_limit));
+                    //bokxman.getUserCredits(bokx_credits);
+
                 }
             });
         } else {
@@ -215,7 +323,8 @@ public class BokxBot extends Fragment {
     public void loadAd(){
         AdManagerAdRequest adRequest = new AdManagerAdRequest.Builder().build();
 
-        RewardedAd.load(this.getContext(), getString(R.string.bokx_rewared_ad_id), adRequest, new RewardedAdLoadCallback() {
+
+        RewardedAd.load(this.getContext(), getString(R.string.bokx_rewarded_ad_id), adRequest, new RewardedAdLoadCallback() {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 super.onAdFailedToLoad(loadAdError);
@@ -228,6 +337,16 @@ public class BokxBot extends Fragment {
 
                 Log.i("Ad status","adloaded");
                 rewardedAd = xrewardedAd;
+
+                rewardedAd.setServerSideVerificationOptions(serverSideVerificationOptions);
+
+                rewardedAd.setOnPaidEventListener(new OnPaidEventListener() {
+                    @Override
+                    public void onPaidEvent(@NonNull AdValue adValue) {
+                        Log.i("Paid Status: ",""+adValue.getValueMicros());
+
+                    }
+                });
             }
         });
     }
@@ -380,9 +499,23 @@ public class BokxBot extends Fragment {
 
 
 
+
     public class BokxAPICallBack implements Callback{
         @Override
         public void onFailure(Call call,IOException e) {
+            search_results.clear();
+            String error_message = "Connection error";
+            search_results.add(new NoteQA("Bokx Error",error_message,true));
+            Log.i("Job Status"," Job has been finished");
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    note_results_adapter.notifyDataSetChanged();
+
+                    model_free = true;
+                }
+            });
             e.printStackTrace();
         }
 
@@ -404,11 +537,39 @@ public class BokxBot extends Fragment {
 
             try {
                 JSONObject job_json = new JSONObject(json_str);
+                int request_status = job_json.getInt("status");
+
+                if(request_status>200){
+                    search_results.clear();
+                    String error_message = job_json.getString("message");
+                    search_results.add(new NoteQA("Bokx Error",error_message,true));
+                    Log.i("Job Status"," Job has been finished");
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            note_results_adapter.notifyDataSetChanged();
+
+                            model_free = true;
+                        }
+                    });
+
+                    return;
+                }
                 String job_status = job_json.getString("job_status");
                 String job_id = job_json.getString("job_id");
                 if(job_status.equals("finished")){
                     JSONArray json_outputs = job_json.getJSONArray("outputs");
                     JSONObject query_output = json_outputs.getJSONObject(0);
+                    JSONObject json_credits = job_json.getJSONObject("credits");
+                    JSONObject json_bokx_credits = json_credits.getJSONObject("bokx_details");
+
+                    int bokx_responses_limit = json_bokx_credits.getInt("bokx_responses_limit");
+                    int bokx_responses = json_bokx_credits.getInt("bokx_responses");
+                    int bokx_request_limit = json_bokx_credits.getInt("bokx_request_limit");
+                    int bokx_requests = json_bokx_credits.getInt("bokx_requests");
+
+                    bokx_credits.postValue(new BokxCredits(bokx_requests,bokx_request_limit,bokx_responses,bokx_responses_limit));
                     String query_answer = query_output.getString("answer");
                     search_results.clear();
                     search_results.add(new NoteQA(recent_query,query_answer,true));

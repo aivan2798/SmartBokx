@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SmartBocx</string>
+    <string name="app_name">SmartBokx</string>
     <string name="clipboard_service_start_text">start\nclipboard\nservice &#128071;&#127997;</string>
     <string name="clipboard_service_stop_text">start\nclipboard\nservice &#128071;&#127997;</string>
     <!-- Strings related to login -->
@@ -14,12 +14,14 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="add_note_title">Add Note</string>
-    <string name="main_banner_app_id">ca-app-pub-3940256099942544/9214589741</string>
+    <string name="test_main_banner_app_id">ca-app-pub-3940256099942544/9214589741</string>
+    <string name="main_banner_app_id">ca-app-pub-3028068424933269/7214764434</string>
     <string name="supabase_url">https://bjzhvayyfwkhmymmpuqf.supabase.co</string>
     <string name="supabase_apikey">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqemh2YXl5ZndraG15bW1wdXFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjI1NDk3MTMsImV4cCI6MjAzODEyNTcxM30.PdBzt2HO0jCVlfpG1F7pG8OceezOO-1VRK8MerUS6a4</string>
     <string name="bokx_get_url">https://ty051i.buildship.run/bokx/model/jobs</string>
     <string name="bokx_post_url">https://ty051i.buildship.run/bokx/model</string>
     <string name="bokx_auth_url">https://ty051i.buildship.run/bokx/auth/signup</string>
     <string name="bokx_base_url">https://ty051i.buildship.run/bokx</string>
-    <string name="bokx_rewared_ad_id">/21775744923/example/rewarded</string>
+    <string name="test_bokx_rewarded_ad_id">/21775744923/example/rewarded</string>
+    <string name="bokx_rewarded_ad_id">ca-app-pub-3028068424933269/5442835960</string>
 </resources>

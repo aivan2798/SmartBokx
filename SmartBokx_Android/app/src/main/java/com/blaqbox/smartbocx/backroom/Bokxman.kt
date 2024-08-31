@@ -21,6 +21,7 @@ import io.github.jan.supabase.exceptions.BadRequestRestException
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.gotrue.SessionSource
 import io.github.jan.supabase.gotrue.SessionStatus
+import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
@@ -35,9 +36,9 @@ import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonPrimitive
 
 
-public class Bokxman(sb_key: String, sb_url: String){
+public class Bokxman(sb_key: String, sb_url: String,val auth_status: MutableLiveData<Boolean>){
     lateinit var supa_client: SupabaseClient
-
+    lateinit var auth_status_in: MutableLiveData<Boolean>
     init {
 
         supa_client = createSupabaseClient(sb_url, sb_key) {
@@ -93,6 +94,7 @@ public class Bokxman(sb_key: String, sb_url: String){
                                 Log.i("kotlin log","refresh signal")
                             }
                             is SessionSource.SignIn -> {
+                                auth_status.postValue(true)
                                 Log.i("kotlin log","signin signal")
                             }
                             is SessionSource.SignUp -> {
@@ -122,6 +124,7 @@ public class Bokxman(sb_key: String, sb_url: String){
                     SessionStatus.NetworkError -> println("Network error")
                     is SessionStatus.NotAuthenticated -> {
                         if(it.isSignOut) {
+                            auth_status.postValue(false)
                             println("User signed out")
                         } else {
                             println("User not signed in")
@@ -134,16 +137,39 @@ public class Bokxman(sb_key: String, sb_url: String){
         }
     }
     fun getUserSession():UserSession?{
+
         var user_session = supa_client.auth.currentSessionOrNull()
+        Log.i("user session","regetting user session "+user_session)
+
         return user_session
+    }
+
+    fun reauth(){
+        Log.i("REAUTH","Reauthing")
+        /*GlobalScope.launch{
+            supa_client.auth.refreshCurrentSession()
+
+            }*/
     }
 
     fun getUserCredits(bokx_credits: MutableLiveData<BokxCredits>){
         GlobalScope.launch {
-            var db_result = supa_client.from("Bokx_Metrics").select(Columns.list("bokx_requests","bokx_request_limit","bokx_responses","bokx_responses_limit")).decodeSingle<BokxCredits>()
-            //DataConnector.getInstance().setCredits(db_result)
-            Log.i("user credits are: ",db_result.bokx_request_limit.toString())
-            bokx_credits.postValue(db_result)
+            try {
+                var db_result = supa_client.from("Bokx_Metrics").select(
+                    Columns.list(
+                        "bokx_requests",
+                        "bokx_request_limit",
+                        "bokx_responses",
+                        "bokx_responses_limit"
+                    )
+                ).decodeSingle<BokxCredits>()
+                //DataConnector.getInstance().setCredits(db_result)
+                Log.i("user credits are: ", db_result.bokx_request_limit.toString())
+                bokx_credits.postValue(db_result)
+            }
+            catch (except: Exception){
+                Log.i("CREDITS ERROR","user credits are not here ")
+            }
 
         }
 
@@ -174,6 +200,24 @@ public class Bokxman(sb_key: String, sb_url: String){
                 auth_status_bot.postValue("internal error: ")
                 Log.i("signup error: ", except.toString())
             }
+        }
+
+    }
+
+    fun getLoginStatus():Boolean{
+        val session_stat: SessionStatus =  supa_client.auth.sessionStatus.value
+        if (session_stat is SessionStatus.Authenticated){
+            //auth_status.postValue(true)
+            return true
+        }
+        //auth_status.postValue(false)
+        return false
+    }
+
+    fun logoutUser(){
+
+        GlobalScope.launch {
+            supa_client.auth.signOut()
         }
 
     }

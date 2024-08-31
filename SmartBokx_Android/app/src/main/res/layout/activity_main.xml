@@ -7,6 +7,19 @@
     android:orientation="vertical"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
+    <LinearLayout
+        android:id="@+id/splashscreen_holder"
+        android:background="@color/black"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ImageView
+            android:id = "@+id/splashscreen_view"
+            android:src="@mipmap/smartbocx_main_round"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/main_appbar"
         android:fitsSystemWindows="true"
@@ -27,6 +40,53 @@
 
 
             app:titleTextColor="@color/white">
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/login_btn"
+                android:text="LOGIN"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/content_deep_color"
+                android:layout_width="wrap_content"
+                android:visibility="visible"
+                android:onClick="login"
+                android:layout_height="wrap_content"/>
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/logout_btn"
+                android:text="LOGOUT"
+                android:textColor="@color/white"
+                android:visibility="gone"
+                android:onClick="logout"
+                android:backgroundTint="@color/content_deep_color"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <LinearLayout
+
+                android:layout_width="wrap_content"
+                android:orientation="vertical"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/automate_bokx_cmd"
+                    android:textColor="@color/white"
+                    android:layout_height="wrap_content"
+                    android:textSize="10dp"
+
+                    android:layout_width="wrap_content"
+                    android:text="Toggle Auto"/>
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/toggle_automate_service_btn"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-condensed-medium"
+                    android:textColor="@color/white"
+                    android:elevation="50dp"
+                    android:onClick="automateBokx"
+                    android:text=""
+                    android:layout_gravity="right"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/round_btn"
+                    android:foreground="@drawable/baseline_android_24"
+                    android:foregroundTint="@color/white"
+                    android:layout_width="32dp"
+                    android:layout_height="31dp" />
+            </LinearLayout>
             <LinearLayout
                 android:layout_gravity="right"
                 android:layout_width="wrap_content"

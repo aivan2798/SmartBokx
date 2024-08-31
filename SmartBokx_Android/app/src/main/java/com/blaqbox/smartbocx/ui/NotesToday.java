@@ -3,9 +3,11 @@ package com.blaqbox.smartbocx.ui;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,7 +78,18 @@ public class NotesToday extends Fragment {
         }
     }
 
+    public void refreshFragment()
+    {
 
+        if((getActivity()!=null)&&isAdded()){
+            FragmentManager fm = getFragmentManager();
+            Log.i("FM STATUS NOTESTODAY","FM NOT NULL");
+            fm.beginTransaction().detach(this).attach(this).commit();
+        }
+        else{
+            Log.i("FM STATUS","FM IS NULL");
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

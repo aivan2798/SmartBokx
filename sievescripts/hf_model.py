@@ -1,6 +1,6 @@
 import sieve
 
-@sieve.Model(name="answer_bot", gpu=sieve.gpu.A100(),python_packages = ["transformers","torch","accelerate"])
+@sieve.Model(name="answer_bot", gpu=sieve.gpu.L4(),python_packages = ["transformers","torch","accelerate"])
 class AnswerBot:
     def __setup__(self):
         from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -22,7 +22,7 @@ class AnswerBot:
         text_in = text["message"]
         sequences = self.pipeline(
                     text_in,
-                    max_length=200,
+                    max_length=900,
                     do_sample=True,
                     top_k=10,
                     num_return_sequences=1,

@@ -1,6 +1,6 @@
 import sieve
 
-@sieve.Model(name="bokxbot",python_packages=["pinecone","transformers","sentence-transformers","openai","langchain","langchainhub","langchain-community",""])
+@sieve.Model(name="bokxbot",gpu=sieve.gpu.T4(),python_packages=["pinecone","transformers","sentence-transformers","openai","langchain","langchainhub","langchain-community",""])
 class BokxBot():
     def __setup__(self):
         from pinecone import Pinecone
@@ -22,6 +22,17 @@ class BokxBot():
                 model_name="meta/llama-3.1-405b-instruct"
         )
 
+    def autoGen(self,plain_url):
+        xurl = {"url":plain_url}
+        bokx_url_analyzer = sieve.function.get("aalg2798007-gmail-com/bokx_url_analyzer")
+        output = bokx_url_analyzer.push(xurl)
+        print('This is printing while a job is running in the background!')
+        result = output.result()
+        print(result)
+        return result
+
+    
+
     def __predict__(self,text):
         raw_text = text["content"]
         cmd = text["route"]
@@ -35,6 +46,9 @@ class BokxBot():
         elif cmd == "query":
             query_answer = self.getAnswer(user_id,raw_text)
             return query_answer
+        elif cmd == "auto_gen":
+            url_text = self.autoGen(raw_text)
+            return url_text
         else:
             return {
                 "message":"unknown command"

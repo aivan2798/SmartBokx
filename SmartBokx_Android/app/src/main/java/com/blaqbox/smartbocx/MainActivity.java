@@ -1,6 +1,7 @@
 package com.blaqbox.smartbocx;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatToggleButton;
@@ -9,8 +10,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
+import androidx.core.text.HtmlCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.ViewPager2;
@@ -27,11 +32,13 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -52,12 +59,14 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -70,6 +79,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -77,10 +87,13 @@ import io.github.jan.supabase.gotrue.user.UserSession;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okio.Buffer;
 
 public class MainActivity extends AppCompatActivity {
     Notifier notifier;
+
+    boolean auth_status;
     BokxAPIHelper bokxAPIHelper;
     String function_name = "";
     String bokxman_sieveman_apikey = "";
@@ -95,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
     Animation sync_animation;
     FloatingActionButton addnote_fab;
 
+    AlertDialog alertDialog;
     AdView adview;
     TabLayout main_tablayout;
 
@@ -104,20 +118,27 @@ public class MainActivity extends AppCompatActivity {
     AppCompatButton sync_btn;
     Bokxman bokxman;
     String bokx_url;
-
+    ImageView splash_screen_img;
     UserSession user_session;
+    String session_token;
     SyncBokxCallBack syncBokxCallBack;
+
+    AppCompatButton login_btn;
+    AppCompatButton logout_btn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         new Thread(()->{
-            MobileAds.initialize(this);
+            MobileAds.initialize(this.getApplicationContext());
+
         }).start();
+        new RequestConfiguration.Builder().setTestDeviceIds(Arrays.asList("FF441097AB540DAA01157414C5946665"));
         //all_notes = new ArrayList<Note>();
         adview = new AdView(this);
         adview.setAdSize(AdSize.BANNER);
         sync_animation = AnimationUtils.loadAnimation(this,R.anim.rotator);
-
+        alertDialog = new AlertDialog.Builder(MainActivity.this,R.style.BokxDialogTheme).create();
         adview.setAdUnitId(getResources().getString(R.string.main_banner_app_id));
 
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -125,8 +146,27 @@ public class MainActivity extends AppCompatActivity {
 
         master_dbHandler = DataConnector.getInstance(getApplicationContext());
         bokxman = DataConnector.getBokxmanInstance();
+
         notifier = new Notifier(getApplicationContext());
         setContentView(R.layout.activity_main);
+        splash_screen_img = (ImageView) findViewById(R.id.splashscreen_view);
+        splash_screen_img.startAnimation(AnimationUtils.loadAnimation(this, R.anim.faded));
+        auth_status = bokxman.getLoginStatus();
+        login_btn = ((AppCompatButton)findViewById(R.id.login_btn));
+        logout_btn = ((AppCompatButton)findViewById(R.id.logout_btn));
+        Log.i("TEMP_AUTH_STATUS",""+auth_status);
+        if(auth_status==true){
+
+            login_btn.setVisibility(View.GONE);
+            logout_btn.setVisibility(View.VISIBLE);
+        }
+        else{
+            logout_btn.setVisibility(View.GONE);
+            login_btn.setVisibility(View.VISIBLE);
+        }
+
+        splash_screen_img.clearAnimation();
+        ((LinearLayout)findViewById(R.id.splashscreen_holder)).setVisibility(View.GONE);
         sync_btn =(AppCompatButton) findViewById(R.id.toggle_clipboard_service_btn);
         //sync_btn.startAnimation(sync_animation);
 
@@ -140,11 +180,14 @@ public class MainActivity extends AppCompatActivity {
         user_session = bokxman.getUserSession();
 
         if(user_session!=null) {
+            Log.i("MAIN_USER_SESSION","NOT NULL");
+            DataConnector.setUserSession(user_session);
             String user_token = user_session.getAccessToken();
             bokxAPIHelper = new BokxAPIHelper(bokx_url, user_token);
             bokxAPIHelper.setBokxCallback(syncBokxCallBack);
         }
         else{
+            Log.i("MAIN_USER_SESSION","IS NULL");
             bokxAPIHelper = new BokxAPIHelper(bokx_url);
             bokxAPIHelper.setBokxCallback(syncBokxCallBack);
         }
@@ -179,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
         });
         tab_adapter = new TabAdapter(this);//, master_dbHandler);
         viewpager.setAdapter(tab_adapter);
+
         viewpager.registerOnPageChangeCallback(
                 new ViewPager2.OnPageChangeCallback(){
                     @Override
@@ -196,6 +240,19 @@ public class MainActivity extends AppCompatActivity {
         */
         LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         fragment_manager = getSupportFragmentManager();
+        List<Fragment> active_frags = fragment_manager.getFragments();
+        Log.i("NO OF FRAGS",""+active_frags.size());
+        for (Fragment active_frag : active_frags){
+
+            if(active_frag!=null){
+
+                Log.i("ACTIVE_FRAGS","NOT NULL "+active_frag.getId());
+            }
+            else{
+                Log.i("ACTIVE_FRAGS","FRAGS NULL");
+            }
+
+        }
         //notes_list = layoutInflater.inflate(R.layout.activity_main,null);
         //viewpager.addView(notes_list);
         exDialog = new ExDialog();
@@ -233,9 +290,158 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("asset error", ie.getMessage());
         }
 
+        bokxman.getAuth_status().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                auth_status = bokxman.getLoginStatus();
+                if(auth_status==true){
+                    user_session = bokxman.getUserSession();
+
+                    if(user_session!=null){
+                        Log.i("INTERNAL_MAIN_USER_SESSION","NOT NULL");
+                        DataConnector.setUserSession(user_session);
+                        String user_token = user_session.getAccessToken();
+                        bokxAPIHelper = new BokxAPIHelper(bokx_url, user_token);
+                        bokxAPIHelper.setBokxCallback(syncBokxCallBack);
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+
+                                        Log.i("BOKX_AUTH","STARTED BOKX_AUTH");
+
+
+                                        Response credict = bokxAPIHelper.auth();
+
+                                        if(credict==null){
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    alertDialog.setTitle("CONNECTION ERROR");
+                                                    alertDialog.setMessage("Internal error");
+                                                    alertDialog.show();
+                                                }
+                                            });
+                                            //return;
+                                        } else if (credict.code()>200) {
+                                            showAlertDialog("CONNECTION ERROR","Problem with Auth");
+                                        } else {
+                                            String credits_body = credict.body().string();
+                                            Log.i("THREAD DATA: ", credits_body);
+
+                                            JSONObject json_cedits = new JSONObject(credits_body);
+
+                                            int status = json_cedits.getInt("status");
+
+                                            if (status == 200) {
+                                                String available_qn = "" + json_cedits.getInt("available_questions");
+                                                String available_ans = "" + json_cedits.getInt("available_answers");
+
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        showAlertDialog("Auth Ok", "User Authorized");
+                                                    }
+                                                });
+
+
+                                            } else {
+                                               // String available_qn = "" + json_cedits.getString("message");
+
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        showAlertDialog("Auth Not Ok", "oops");
+                                                    }
+                                                });
+
+                                            }
+                                        }
+
+
+                                }
+                                catch (IOException ioe){
+                                    ioe.printStackTrace();
+
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showAlertDialog("UNKOWN ERROR","Couldn't login properly");
+
+                                        }
+                                    });
+                                }
+
+                                catch(JSONException joe){
+
+                                    joe.printStackTrace();
+
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showAlertDialog("DATA ERROR","Couldn't parse data");
+
+                                        }
+                                    });
+                                }
+                            }
+                        }).start();
+                    }
+                    login_btn.setVisibility(View.GONE);
+                    logout_btn.setVisibility(View.VISIBLE);
+                }
+                else{
+                    logout_btn.setVisibility(View.GONE);
+                    login_btn.setVisibility(View.VISIBLE);
+                }
+                //refreshAllTabs();
+                List<Fragment> active_frags = fragment_manager.getFragments();
+                Log.i("NO OF FRAGS",""+active_frags.size());
+                for (Fragment active_frag : active_frags){
+
+                    if(active_frag!=null){
+
+                        Log.i("ACTIVE_FRAGS","NOT NULL "+active_frag.getId());
+                    }
+                    else{
+                        Log.i("ACTIVE_FRAGS","FRAGS NULL");
+                    }
+
+                }
+
+                refreshTab(2);
+                viewpager.setCurrentItem(0,true);
+
+            }
+        });
+
     }
 
+    public void showAlertDialog(String xdialog_title,String xdialog_msg){
 
+        String dialog_msg = "<font color='#111111'>"+xdialog_msg+"</font>";
+        String dialog_title = "<font color='#111111'>"+xdialog_title+"</font>";
+        alertDialog.setTitle(Html.fromHtml(dialog_title));
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE,"OK",(dialog, which) -> {
+            dialog.dismiss();
+        });
+        alertDialog.setMessage(Html.fromHtml(dialog_msg));
+        alertDialog.show();
+    }
+
+    public void refreshAllTabs(){
+
+        int tabs_ct = tab_adapter.getItemCount();
+        for (int t = 0; t < tabs_ct; t++) {
+
+            tab_adapter.notifyItemChanged(t);
+
+        }
+    }
+
+    public void refreshTab(int tab){
+        tab_adapter.refreshItem(tab);
+    }
 
 
 
@@ -266,17 +472,18 @@ public class MainActivity extends AppCompatActivity {
 
     public void syncBokx(View parent_view)
     {
-        sync_btn.startAnimation(sync_animation);
-        UserSession xuser_session = bokxman.getUserSession();
 
+        UserSession xuser_session = bokxman.getUserSession();
+        List<NoteJson> notejson_list = new ArrayList<NoteJson>();
+        Log.i("LOGIN STATUS",""+auth_status);
         if((user_session==null)&&(xuser_session!=null)){
+            auth_status = bokxman.getLoginStatus();
             user_session = xuser_session;
             bokxAPIHelper = new BokxAPIHelper(bokx_url,user_session.getAccessToken());
         }
 
-        List<NoteJson> notejson_list = new ArrayList<NoteJson>();
         if(user_session!=null) {
-
+            sync_btn.startAnimation(sync_animation);
             for (Note note: master_dbHandler.getAllNotes()){
                 notejson_list.add(note.toJson());
             }
@@ -292,10 +499,18 @@ public class MainActivity extends AppCompatActivity {
             Log.i("sievebokx json", sievesync_json);
         }
         else{
-            Toast.makeText(this,"PLEASE LOGIN/SIGN UP 1ST",Toast.LENGTH_LONG).show();
+
+            alertDialog.setTitle("SESSION ALERT");
+            alertDialog.setMessage("PLEASE LOGIN/SIGN UP 1ST");
+            alertDialog.setIcon(R.drawable.smartbocx_main_foreground);
+            //Toast.makeText(this,,Toast.LENGTH_LONG).show();
             viewpager.setCurrentItem(2,true);
         }
 
+
+    }
+
+    public void autoBokx(View view){
 
     }
 
@@ -305,10 +520,57 @@ public class MainActivity extends AppCompatActivity {
         viewpager.invalidate();
     }
 
+    public void login(View view){
+        auth_status = bokxman.getLoginStatus();
+        if(auth_status==true){
+
+            alertDialog.setTitle("Login Message");
+            alertDialog.setMessage("user Already loged in");
+            alertDialog.show();
+        }
+        else{
+            viewpager.setCurrentItem(2,true);
+        }
+    }
+
+    public void logout(View view){
+        auth_status = bokxman.getLoginStatus();
+        if(auth_status==true){
+            bokxman.logoutUser();
+            logout_btn.setVisibility(View.GONE);
+            login_btn.setVisibility(View.VISIBLE);
+
+
+            refreshTab(2);
+            //refreshAllTabs();
+
+            //alertDialog.setTitle("Login Message");
+            //alertDialog.setMessage("user Already loged in");
+            //alertDialog.show();
+        }
+        else{
+            alertDialog.setTitle("Login Message");
+
+            alertDialog.setMessage("user loged out alread");
+            alertDialog.show();
+        }
+    }
+
 
     public class SyncBokxCallBack implements Callback {
         @Override
         public void onFailure(Call call, IOException e) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    sync_btn.clearAnimation();
+
+                    alertDialog.setTitle("CONNECTION ERROR");
+                    alertDialog.setMessage("Oops, Connect to the internet and please try again");
+                    alertDialog.show();
+                }
+            });
+            Log.i("BOKX HTTP", "CONNECTION FAILED");
             e.printStackTrace();
         }
 
@@ -330,59 +592,74 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 JSONObject job_json = new JSONObject(json_str);
-                String job_status = job_json.getString("job_status");
-                String job_id = job_json.getString("job_id");
-                if(job_status.equals("finished")){
-                    //JSONArray json_outputs = job_json.getJSONArray("outputs");
-                    //JSONObject query_output = json_outputs.getJSONObject(0);
-                    //String query_answer = query_output.getJSONObject("data").getString("answer");
-                    //search_results.clear();
-                    //search_results.add(new NoteQA(recent_query,query_answer));
-                    Log.i("Job Status"," Job has been finished");
+                int json_status = job_json.getInt("status");
+
+                if(json_status<=200) {
+                    String job_status = job_json.getString("job_status");
+                    String job_id = job_json.getString("job_id");
+                    if (job_status.equals("finished")) {
+                        //JSONArray json_outputs = job_json.getJSONArray("outputs");
+                        //JSONObject query_output = json_outputs.getJSONObject(0);
+                        //String query_answer = query_output.getJSONObject("data").getString("answer");
+                        //search_results.clear();
+                        //search_results.add(new NoteQA(recent_query,query_answer));
+                        Log.i("Job Status", " Job has been finished");
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                sync_btn.clearAnimation();
+                                Toast.makeText(getApplicationContext(), "Data Finished to Synchronise", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    } else if (job_status.equals("queued")) {
+                        //recent_job = job_id;
+                        //model_free = false;
+                        //search_results.clear();
+                        //search_results.add(new NoteQA(recent_query,"Please wait ...."));
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                Toast.makeText(getApplicationContext(), "Data Synchronc Started", Toast.LENGTH_LONG).show();
+                            }
+                        });
+
+
+                        new Thread(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        bokxAPIHelper.getJob(job_id);
+                                    }
+                                }
+
+                        ).run();
+                    } else {
+                        Log.i("Job Status", job_status);
+                        new Thread(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        bokxAPIHelper.getJob(job_id);
+                                    }
+                                }
+
+                        ).run();
+                    }
+                }
+                else{
+                    String job_message = job_json.getString("message");
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             sync_btn.clearAnimation();
-                            Toast.makeText(getApplicationContext(),"Data Finished to Synchronise",Toast.LENGTH_LONG).show();
+
+                            alertDialog.setTitle("BOKX ERROR");
+                            alertDialog.setMessage(job_message);
+                            alertDialog.show();
                         }
                     });
-                }
-                else if(job_status.equals("queued")){
-                    //recent_job = job_id;
-                    //model_free = false;
-                    //search_results.clear();
-                    //search_results.add(new NoteQA(recent_query,"Please wait ...."));
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            Toast.makeText(getApplicationContext(),"Data Synchronc Started",Toast.LENGTH_LONG).show();
-                        }
-                    });
-
-
-                    new Thread(
-                            new Runnable() {
-                                @Override
-                                public void run() {
-                                    bokxAPIHelper.getJob(job_id);
-                                }
-                            }
-
-                    ).run();
-                }
-                else{
-                    Log.i("Job Status",job_status);
-                    new Thread(
-                            new Runnable() {
-                                @Override
-                                public void run() {
-                                    bokxAPIHelper.getJob(job_id);
-                                }
-                            }
-
-                    ).run();
                 }
 
             }
