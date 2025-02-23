@@ -22,13 +22,15 @@ import com.blaqbox.smartbocx.backroom.DataConnector;
 import com.blaqbox.smartbocx.backroom.NoteReceiver;
 import com.blaqbox.smartbocx.db.DBHandler;
 
+import java.util.Date;
+
 public class Notifier
 {
     DataConnector db_connector;
     public Notifier(Context context)
     {
         Log.i("loading notfier","notifier loaded");
-        db_connector = DataConnector.getInstance();;
+        db_connector = DataConnector.getInstance(context);;
     }
     public void showNewNoteNotification(Context context, NotificationManager notes_notification_manager,String note_title, String content)
     {
@@ -131,7 +133,7 @@ public class Notifier
         Notification note_notification = notification_builder.build();
 
         /*NotificationChannel notes_channel = new NotificationChannel(channel_id,"Smart Bocx",NotificationManager.IMPORTANCE_DEFAULT);*/
-        NotificationManagerCompat notification_compat = NotificationManagerCompat.from(context);
+        //NotificationManagerCompat notification_compat = NotificationManagerCompat.from(context);
 
         if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O &&
                 notes_notification_manager.getNotificationChannel(channel_id)==null) {
@@ -139,10 +141,17 @@ public class Notifier
                     "Whatever", NotificationManager.IMPORTANCE_DEFAULT));
         }
 
-        if(note_status==200) {
-            db_connector.addNewNote("Link Note", note_title, note_data);
-        }
+        Log.i("SAVED_NOTE",""+note_status+" "+note_title+" "+note_data);
         notes_notification_manager.notify(1998,note_notification);
+        if(note_status==200) {
+            long epoch_sec = new Date().getTime();
+
+            String note_name = "LINK_NOTE_"+epoch_sec;
+
+            Log.i("NEW NOTE","adding note: "+note_name);
+            db_connector.addNewNotePlain(note_name, note_title, note_data);
+        }
+
         // TODO: This method is called when the BroadcastReceiver is receiving
         // an Intent broadcast.
         //throw new UnsupportedOperationException("Not yet implemented");

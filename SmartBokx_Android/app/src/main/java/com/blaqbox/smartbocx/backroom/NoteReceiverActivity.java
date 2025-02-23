@@ -17,7 +17,7 @@ public class NoteReceiverActivity extends AppCompatActivity {
     Notifier note_recv_activity_notifier;// = new Notifier();
     NotificationManager notification_manager;
     String bokx_url;
-
+    Bokxman bokxman;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,13 +29,13 @@ public class NoteReceiverActivity extends AppCompatActivity {
         bokx_url =  getResources().getString(R.string.bokx_base_url);
         Intent intent = getIntent();
         String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
-        UserSession user_session = DataConnector.getBokxmanInstance().getUserSession();
-        if(user_session!=null){
+        //UserSession user_session = .getUserSession();
+        //if(user_session!=null){
             Log.i("NOTIFY SESSION", "USER SESSION YES");
-        }else{
+        //}else{
             //DataConnector.getBokxmanInstance().reauth();
             Log.i("NOTIFY SESSION", "USER SESSION NO");
-        }
+        //}
         note_recv_activity_notifier.showNewNoteNotification(getApplicationContext(),notification_manager,"NEW NOTE",sharedText);
         finish();
         //setContentView(R.layout.activity_note_receiver);

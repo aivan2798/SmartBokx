@@ -1,0 +1,100 @@
+.main_dashboard_body{
+    border: 1px solid black;
+    width: 80%;
+    height: 80vh;
+    background-color: rgb(255, 255, 255);
+    position: relative;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    box-shadow: 5px 5px 10px 2px black inset, -5px -5px 10px 2px black inset;
+}
+
+.search_body{
+    position: fixed;
+}
+
+#search_id{
+    margin-top: 20px;
+    
+}
+
+#search_input{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+}
+
+#search_btn{
+    border-radius: 50px;
+}
+
+#search_icon_btn{
+    border-radius: 80px;
+}
+
+.input-container {
+    display: flex;
+    width: 80%;
+    margin-bottom: 15px;
+  }
+
+.navbar-brand-md{
+    margin-top: 5px;
+    background-color: gray;
+    color: white;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-left:1px;
+    padding: 2px;
+}
+
+.bokx-category{
+    border: 2px dotted black;
+    margin: 2px;
+    padding: 3px;
+    font-size: 0.8em;
+    
+    
+}
+
+.note-bokx{
+    /*border: 2px dotted black;*/
+    margin-top: 5px;
+    padding: 5px;
+    
+   
+    /*font-size: 0.8em;*/
+    
+    
+}
+.note_title{
+    background-color: black;
+    color: white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    word-break: break-word;
+}
+
+.note_content{
+    background-color: gray;
+    color: white;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    padding: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    word-break: break-word;
+}
+
+.bokx-category:hover{
+    background-color: rgb(30, 105, 209);
+    font-weight: bold;
+    color: white;
+}
+
+.dashboard_container{
+    background-color: white;
+    width: 100vw;
+}
+

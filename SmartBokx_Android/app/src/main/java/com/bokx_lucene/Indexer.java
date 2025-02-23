@@ -72,7 +72,7 @@ public class Indexer {
                 note_components.note_link,Field.Store.YES,Field.Index.NOT_ANALYZED);
         //index file path
 
-        String note_index  = Integer.toString(note_components.note_id);
+        String note_index  = Long.toString(note_components.note_id);
         Log.i("note_index: ", note_index);
         Field notePathField = new Field(LuceneConstants.FILE_PATH,
                 note_index,Field.Store.YES,Field.Index.NOT_ANALYZED);

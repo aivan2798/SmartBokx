@@ -65,9 +65,9 @@ public class FindNotes extends Fragment {
     {
         search_results.clear();
         String query_string = note_query_input.getText().toString();
-        String notes_index_path = find_notes_connector.getIndexDirectory();
+        //String notes_index_path = find_notes_connector.getIndexDirectory();
         Searcher note_searcher = null;
-        Log.i("Notes directory: ",notes_index_path);
+       // Log.i("Notes directory: ",notes_index_path);
         int all_hits = find_notes_connector.searchNotes(search_results,query_string);
         /*
         TopDocs topDocs;

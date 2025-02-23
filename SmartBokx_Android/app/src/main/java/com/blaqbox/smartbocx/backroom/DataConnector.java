@@ -18,6 +18,7 @@ import com.bokx_lucene.Indexer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import io.github.jan.supabase.gotrue.user.UserSession;
@@ -110,12 +111,16 @@ public class DataConnector
         return auth_status;
     }
 
-    public static void setSession_string(String session_string) {
-        DataConnector.session_string = session_string;
+    public MutableLiveData<Boolean> getTheAuthStatus() {
+        return auth_status;
+    }
+
+    public static void setSession_string(String xsession_string) {
+       session_string = xsession_string;
     }
 
     public static void setUserSession(UserSession userSession){
-        DataConnector.current_session = userSession;
+        current_session = userSession;
     }
 
     public static DataConnector getInstance(Context context)
@@ -133,7 +138,7 @@ public class DataConnector
         project_key = db_context.getResources().getString(R.string.supabase_apikey);
         project_url = context.getResources().getString(R.string.supabase_url);
         auth_status = new MutableLiveData<Boolean>(false);
-        bokxman = new Bokxman(project_key,project_url,auth_status);
+        bokxman = new Bokxman(context,project_key,project_url,auth_status);
         UserSession xcurrent_session = bokxman.getUserSession();
 
         if(current_session!=null){
@@ -226,8 +231,27 @@ public class DataConnector
 
     public void addNewNote(String note_name, String note_link, String note_description)
     {
+
+        //long epoch_sec = new Date().getTime();
+
+        //String note_name = anote_name+"_"+epoch_sec;
+        Log.i("NEW NOTE","adding note: "+note_name);
         dbHandler.addNewNote(note_name,note_link,note_description);
 
+        if(all_notes_adapter!=null) {
+            all_notes_adapter.notifyDataSetChanged();
+        }
+    }
+
+    public void addNewNotePlain(String note_name, String note_link, String note_description)
+    {
+
+        dbHandler.addNewNote(note_name,note_link,note_description);
+
+    }
+
+    public void deleteNote(int index,String note_name){
+        dbHandler.deleteNote(index,note_name);
         if(all_notes_adapter!=null) {
             all_notes_adapter.notifyDataSetChanged();
         }

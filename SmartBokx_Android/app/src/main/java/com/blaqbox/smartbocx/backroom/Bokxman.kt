@@ -1,6 +1,7 @@
 package com.blaqbox.smartbocx.backroom
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
@@ -16,6 +17,7 @@ import kotlinx.coroutines.GlobalScope
 import androidx.lifecycle.lifecycleScope
 import com.blaqbox.smartbocx.Models.BokxCredits
 import com.blaqbox.smartbocx.ui.BokxBot
+import com.blaqbox.smartbocx.utils.Constants
 import io.github.jan.supabase.SupabaseClientBuilder
 import io.github.jan.supabase.exceptions.BadRequestRestException
 import io.github.jan.supabase.exceptions.RestException
@@ -36,9 +38,10 @@ import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonPrimitive
 
 
-public class Bokxman(sb_key: String, sb_url: String,val auth_status: MutableLiveData<Boolean>){
+public class Bokxman(context: Context , sb_key: String, sb_url: String,val auth_status: MutableLiveData<Boolean>){
     lateinit var supa_client: SupabaseClient
     lateinit var auth_status_in: MutableLiveData<Boolean>
+    lateinit var shared_prefs: SharedPreferences
     init {
 
         supa_client = createSupabaseClient(sb_url, sb_key) {
@@ -47,6 +50,7 @@ public class Bokxman(sb_key: String, sb_url: String,val auth_status: MutableLive
             install(Postgrest)
             useHTTPS = true
         }
+        shared_prefs = context.getSharedPreferences("AUTH",Context.MODE_PRIVATE)
         //supa_client.channel("supa_client")
         //Log.i("subscriptions channel",channel.topic)
         //var channel = supa_client.realtime.channel("my-channel")
@@ -86,12 +90,24 @@ public class Bokxman(sb_key: String, sb_url: String,val auth_status: MutableLive
                 when(it) {
                     is SessionStatus.Authenticated -> {
                         println("Received new authenticated session.")
+
+
+
+                        with (shared_prefs.edit()){
+
+                        putBoolean(Constants.AUTH_STATUS,true)
+                        apply()}
                         when(it.source) { //Check the source of the session
                             SessionSource.External -> {
                                 Log.i("kotlin log","external signal")
+                                with(shared_prefs.edit()){
+                                    putBoolean(Constants.EXTERNAL_SESSION,true)
+                                    apply()
+                                }
                             }
                             is SessionSource.Refresh -> {
                                 Log.i("kotlin log","refresh signal")
+                                shared_prefs.edit().putBoolean(Constants.REFRESH_SESSION,true)
                             }
                             is SessionSource.SignIn -> {
                                 auth_status.postValue(true)
@@ -99,9 +115,14 @@ public class Bokxman(sb_key: String, sb_url: String,val auth_status: MutableLive
                             }
                             is SessionSource.SignUp -> {
                                 Log.i("kotlin log","signup signal")
+                                //shared_prefs.edit().putBoolean("SIGNUP",true)
                             }
                             SessionSource.Storage -> {
                                 Log.i("kotlin log","storage signal")
+                                with(shared_prefs.edit()){
+                                    putBoolean(Constants.STORAGE_SESSION,true)
+                                    apply()
+                                }
                             }
                             SessionSource.Unknown -> {
                                 Log.i("kotlin log","unknown signal")
@@ -120,13 +141,30 @@ public class Bokxman(sb_key: String, sb_url: String,val auth_status: MutableLive
                         }
 
                     }
+
                     SessionStatus.LoadingFromStorage -> println("Loading from storage")
-                    SessionStatus.NetworkError -> println("Network error")
+                    SessionStatus.NetworkError ->{println("Network error")
+                        with (shared_prefs.edit()){
+
+
+                            putBoolean(com.blaqbox.smartbocx.utils.Constants.NETWORK_ERROR,true)
+                            apply()}
+                    }
+
                     is SessionStatus.NotAuthenticated -> {
+                        with (shared_prefs.edit()){
+
+                            putBoolean(Constants.AUTH_STATUS,true)
+                            apply()}
                         if(it.isSignOut) {
                             auth_status.postValue(false)
                             println("User signed out")
                         } else {
+                            with (shared_prefs.edit()){
+
+
+                                putBoolean(com.blaqbox.smartbocx.utils.Constants.SIGNED_OUT,true)
+                                apply()}
                             println("User not signed in")
                         }
                     }
@@ -137,8 +175,23 @@ public class Bokxman(sb_key: String, sb_url: String,val auth_status: MutableLive
         }
     }
     fun getUserSession():UserSession?{
+        /*
+        var session_fin: Boolean = false
+        GlobalScope.launch {
+             //supa_client.auth.refreshCurrentSession()
+            supa_client.auth.reauthenticate();
+            session_fin = true
+            Log.i("Session Update: ","session finished: "+session_fin)
+        }
+        while(session_fin == false)
+        {
+            //Log.i("SESSION UPDATE: ","fixing session")
+        }
+        */
 
-        var user_session = supa_client.auth.currentSessionOrNull()
+
+        var user_session = supa_client.auth.currentSessionOrNull();
+        Log.i("Session info", "expires in: "+user_session?.expiresIn)
         Log.i("user session","regetting user session "+user_session)
 
         return user_session
@@ -191,7 +244,8 @@ public class Bokxman(sb_key: String, sb_url: String,val auth_status: MutableLive
 
                 var status_code = except.error
                 var description = except.description
-                auth_status_bot.postValue("signin error: "+description)
+                auth_status_bot.postValue("signin error: "+status_code)
+                has_auth.postValue(true)
                 Log.i("signin exception: ",status_code+" : "+description)
                 except.printStack()
             }
@@ -241,7 +295,7 @@ public class Bokxman(sb_key: String, sb_url: String,val auth_status: MutableLive
                                 auth_status_bot.postValue("Please Verify your Email And Login")
                             }
                         } else {
-
+                            auth_status_bot.postValue("User already verified, Please login")
                         }
                     }
 

@@ -23,6 +23,7 @@
             android:layout_height="match_parent"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp">
+
             <TextView
                 android:id="@+id/note_title"
                 android:text="NOTE TITLE"
@@ -74,6 +75,7 @@
                 android:id="@+id/note_speak"
                 android:layout_width="25dp"
                 android:layout_height="25dp"
+
                 android:layout_marginLeft="50dp"
                 android:background="@drawable/note_actions_btn"
                 android:foregroundTint="@color/black"

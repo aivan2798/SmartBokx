@@ -5,4 +5,7 @@
         <attr name="exampleColor" format="color" />
         <attr name="exampleDrawable" format="color|reference" />
     </declare-styleable>
+    <declare-styleable name="DataBank">
+        <attr name="datum" format="integer"/>
+    </declare-styleable>
 </resources>

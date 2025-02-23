@@ -1,21 +1,23 @@
 import sieve
+import os
 import urllib 
 import requests
 import datetime
-@sieve.Model(name="bokx_url_analyzer",gpu=sieve.gpu.T4(),python_version="3.9",python_packages=["supabase","MoviePy", "tiktok_downloader"])
+@sieve.Model(name="bokx_url_analyzer",environment_variables=[sieve.Env(name="supabase_api_key",description="supabase service role key")],python_version="3.10",python_packages=["supabase","moviepy", "tiktok-downloader"],run_commands=["pip install --upgrade pip"])
 class BokxURL():
+    
     def __setup__(self):
         import supabase
-        from moviepy.editor import VideoFileClip
-        from tiktok_downloader import snaptik
-        supabase_url = ""
-        supabase_api_key = ""
-        self.bucket_name = ""
+        
+        supabase_url = "https://bjzhvayyfwkhmymmpuqf.supabase.co"
+        supabase_api_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqemh2YXl5ZndraG15bW1wdXFmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyMjU0OTcxMywiZXhwIjoyMDM4MTI1NzEzfQ.4X3qtti2AtU8TR7Pr4jmGindl1KzqSwX9pSt1ggsdW8"#os.getenv("supabase_api_key")
+        self.bucket_name = "bokxbucket"
         
         self.supabase_man = supabase.create_client(supabase_url,supabase_api_key)
         
 
     def __predict__(self,text):
+       
         active_url = text["url"]
         status,condensed = self.startFlow(active_url)
         return {
@@ -43,6 +45,7 @@ class BokxURL():
     
     #tiktok downloader
     def tiktokDownload(self,tiktok_link):
+        from tiktok_downloader import snaptik
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         print(timestamp)
         file_name = "bokx"+timestamp+".mp4"
@@ -110,6 +113,7 @@ class BokxURL():
         return master_url
 
     def processUrl(self,master_url):
+        from moviepy.editor import VideoFileClip
         parsed_url = urllib.parse.urlparse(master_url.lower())
         split_url = parsed_url.netloc.split(".")
         file_name = ""
@@ -125,9 +129,9 @@ class BokxURL():
                 print("from tiktok: ",master_url)
                 file_name = self.tiktokDownload(master_url)
                 print("from tiktok")
-            
-            #clip = VideoFileClip(filepath)
-            clip_len = 20#self.getDuration(clip)
+            print(file_name)
+            clip = VideoFileClip(file_name)
+            clip_len = self.getDuration(clip)
             if(clip_len>600):
                 sub_clip = clip.subclip(0, 10)
                 clip_name = filepath+"cliped"+".mp4"

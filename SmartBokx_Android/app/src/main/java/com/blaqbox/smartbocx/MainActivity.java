@@ -30,6 +30,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
@@ -111,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
     AlertDialog alertDialog;
     AdView adview;
     TabLayout main_tablayout;
-
+    ConnectivityManager.NetworkCallback networkCallback;
     LinearLayout banner_holder;
     NotificationManager notes_notification_manager = null;
 
@@ -125,14 +129,33 @@ public class MainActivity extends AppCompatActivity {
 
     AppCompatButton login_btn;
     AppCompatButton logout_btn;
+
+    ConnectivityManager connectivityManager;
+
+    NetworkRequest network_request;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        new Thread(()->{
-            MobileAds.initialize(this.getApplicationContext());
 
-        }).start();
+        connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        networkCallback = new ConnectivityManager.NetworkCallback(){
+            @Override
+            public void onAvailable(@NonNull Network network) {
+                super.onAvailable(network);
+                Toast.makeText(getApplicationContext(),"NETWORK RETURNED",Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onLost(@NonNull Network network) {
+                super.onLost(network);
+
+                Toast.makeText(getApplicationContext(),"NETWORK LOST",Toast.LENGTH_LONG).show();
+            }
+        };
+        network_request = new NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build();
+
+        connectivityManager.registerNetworkCallback(network_request,networkCallback);
         new RequestConfiguration.Builder().setTestDeviceIds(Arrays.asList("FF441097AB540DAA01157414C5946665"));
         //all_notes = new ArrayList<Note>();
         adview = new AdView(this);
@@ -149,8 +172,9 @@ public class MainActivity extends AppCompatActivity {
 
         notifier = new Notifier(getApplicationContext());
         setContentView(R.layout.activity_main);
-        splash_screen_img = (ImageView) findViewById(R.id.splashscreen_view);
-        splash_screen_img.startAnimation(AnimationUtils.loadAnimation(this, R.anim.faded));
+        //showAlertDialog("Authorizing","please wait");
+        //splash_screen_img = (ImageView) findViewById(R.id.splashscreen_view);
+        //splash_screen_img.startAnimation(AnimationUtils.loadAnimation(this, R.anim.faded));
         auth_status = bokxman.getLoginStatus();
         login_btn = ((AppCompatButton)findViewById(R.id.login_btn));
         logout_btn = ((AppCompatButton)findViewById(R.id.logout_btn));
@@ -165,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
             login_btn.setVisibility(View.VISIBLE);
         }
 
-        splash_screen_img.clearAnimation();
+       // splash_screen_img.clearAnimation();
         ((LinearLayout)findViewById(R.id.splashscreen_holder)).setVisibility(View.GONE);
         sync_btn =(AppCompatButton) findViewById(R.id.toggle_clipboard_service_btn);
         //sync_btn.startAnimation(sync_animation);
@@ -256,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
         //notes_list = layoutInflater.inflate(R.layout.activity_main,null);
         //viewpager.addView(notes_list);
         exDialog = new ExDialog();
-
+        /*
         try {
             File files_dir = getObbDir();
             //download the model from: https://www.kaggle.com/models/tensorflow/mobilebert/tfLite/metadata
@@ -289,6 +313,7 @@ public class MainActivity extends AppCompatActivity {
         {
                 Log.e("asset error", ie.getMessage());
         }
+        */
 
         bokxman.getAuth_status().observe(this, new Observer<Boolean>() {
             @Override
@@ -340,6 +365,8 @@ public class MainActivity extends AppCompatActivity {
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
+                                                        login_btn.setVisibility(View.GONE);
+                                                        logout_btn.setVisibility(View.VISIBLE);
                                                         showAlertDialog("Auth Ok", "User Authorized");
                                                     }
                                                 });
@@ -366,6 +393,7 @@ public class MainActivity extends AppCompatActivity {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
+
                                             showAlertDialog("UNKOWN ERROR","Couldn't login properly");
 
                                         }
@@ -422,6 +450,7 @@ public class MainActivity extends AppCompatActivity {
         String dialog_msg = "<font color='#111111'>"+xdialog_msg+"</font>";
         String dialog_title = "<font color='#111111'>"+xdialog_title+"</font>";
         alertDialog.setTitle(Html.fromHtml(dialog_title));
+
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE,"OK",(dialog, which) -> {
             dialog.dismiss();
         });
@@ -482,7 +511,7 @@ public class MainActivity extends AppCompatActivity {
             bokxAPIHelper = new BokxAPIHelper(bokx_url,user_session.getAccessToken());
         }
 
-        if(user_session!=null) {
+        if((user_session!=null)&&auth_status==true) {
             sync_btn.startAnimation(sync_animation);
             for (Note note: master_dbHandler.getAllNotes()){
                 notejson_list.add(note.toJson());
@@ -588,7 +617,7 @@ public class MainActivity extends AppCompatActivity {
             int response_code = sieve_response.code();
             String response_headers = sieve_response.headers().toString();
             String response_msg = sieve_response.message();
-            Log.i("unirest response json", json_str+"\n"+response_code+":\t"+response_headers+"\nresponse_msg"+response_msg);
+            //Log.i("unirest response json", json_str+"\n"+response_code+":\t"+response_headers+"\nresponse_msg"+response_msg);
 
             try {
                 JSONObject job_json = new JSONObject(json_str);
@@ -598,9 +627,40 @@ public class MainActivity extends AppCompatActivity {
                     String job_status = job_json.getString("job_status");
                     String job_id = job_json.getString("job_id");
                     if (job_status.equals("finished")) {
-                        //JSONArray json_outputs = job_json.getJSONArray("outputs");
-                        //JSONObject query_output = json_outputs.getJSONObject(0);
-                        //String query_answer = query_output.getJSONObject("data").getString("answer");
+                        JSONArray json_outputs = job_json.getJSONArray("outputs");
+                        JSONObject query_output = json_outputs.getJSONObject(0);
+                        JSONArray extra_data = query_output.getJSONArray("data");
+
+                        int json_len = extra_data.length();
+                        Log.i("Exports Length: ",""+json_len);
+
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    for (int init_len = 0; init_len < json_len; init_len++) {
+                                        JSONObject content_obj = extra_data.getJSONObject(init_len);
+                                        String note_data = content_obj.getString("content");
+                                        String note_link = content_obj.getString("link");
+                                        String note_title = content_obj.getString("title");
+                                        Log.i("MAGIC_NOTE" + note_title + "__" + init_len, note_data);
+                                        master_dbHandler.addNewNotePlain(note_title, note_link, note_data);
+
+                                    }
+
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            master_dbHandler.refresh();
+                                        }
+                                    });
+                                }
+                                catch(JSONException joe){
+                                    joe.printStackTrace();
+                                }
+                            }
+                        }).start();
+
                         //search_results.clear();
                         //search_results.add(new NoteQA(recent_query,query_answer));
                         Log.i("Job Status", " Job has been finished");
@@ -635,7 +695,18 @@ public class MainActivity extends AppCompatActivity {
                                 }
 
                         ).run();
-                    } else {
+                    }
+                    else if (job_status.equals("error")){
+                        Log.i("Job Status", " Job has been got error");
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                sync_btn.clearAnimation();
+                                Toast.makeText(getApplicationContext(), "Data Finished with Error", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                    else {
                         Log.i("Job Status", job_status);
                         new Thread(
                                 new Runnable() {
@@ -645,7 +716,7 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 }
 
-                        ).run();
+                        ).start();
                     }
                 }
                 else{
@@ -667,6 +738,15 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("call back error",except.getMessage());
             }
 
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i("BOKX_ACTION","REFRESHINH BOKX");
+        if(master_dbHandler!=null){
+            master_dbHandler.refresh();
         }
     }
 

@@ -29,6 +29,8 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.util.Date;
+
 /**
  * TODO: document your custom view class.
  */
@@ -87,7 +89,10 @@ public class ExDialog extends DialogFragment {
 
         String link_description = note_desc.getText().toString();
         Toast.makeText(this.getContext(), "Note Saved: "+link+"\n\n"+link_description, Toast.LENGTH_SHORT).show();
-        db_handler.addNewNote("Link Note",link,link_description);
+        long epoch_sec = new Date().getTime();
+
+        String note_name = "LINK_NOTE_"+epoch_sec;
+        db_handler.addNewNote(note_name,link,link_description);
 
     }
 }

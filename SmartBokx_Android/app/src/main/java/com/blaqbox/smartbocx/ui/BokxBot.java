@@ -124,6 +124,7 @@ public class BokxBot extends Fragment {
             public void onChanged(String s) {
                 Log.i("AUTH_STATUS","auth status has changed");
                 auth_status_view.clearAnimation();
+                auth_status_view.setText(s);
                 /*
                 try {
 

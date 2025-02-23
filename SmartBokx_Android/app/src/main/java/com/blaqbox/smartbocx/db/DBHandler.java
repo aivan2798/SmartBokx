@@ -12,6 +12,7 @@ import com.blaqbox.smartbocx.ui.NotesToday;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class DBHandler extends SQLiteOpenHelper {
 
@@ -90,6 +91,47 @@ private static final String TRACKS_COL = "tracks";
         //db.execSQL("DROP TABLE " + TABLE_NAME);
     }
 
+    public void deleteNote(int index,String note_name)//, String note_link, String note_description)
+    {
+
+        // on below line we are creating a variable for
+        // our sqlite database and calling writable method
+        // as we are writing data in our database.
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // on below line we are creating a
+
+        // after adding all values we are passing
+        // content values to our table.
+        String delete_query = NAME_COL+" = ?";
+        String delete_args[] = {note_name};
+        int del_rows = db.delete(FTS_TABLE_NAME,delete_query,delete_args);
+
+        Log.i("deleted rows","Row: "+del_rows);
+        // at last we are closing our
+        // database after adding database.
+        db.close();
+
+        Note dead_note = notes_list.remove(index);
+        Log.i("DEAD_NOTE_NAME",dead_note.note_name);
+        Log.i("DEAD_NOTE_LINK",dead_note.note_link);
+        Log.i("DEAD_NOTE_INDEX",dead_note.note_description);
+        /*
+        notes_list.removeIf(new Predicate<Note>() {
+            @Override
+            public boolean test(Note note) {
+                if(note.note_name == note_name)
+                {
+                    return true;
+                }
+                return false;
+            }
+        });
+
+         */
+                //add(0,new Note(note_name,note_link,note_description));
+    }
+
     // this method is use to add new course to our sqlite database.
     public void addNewNote(String note_name, String note_link, String note_description) {
 
@@ -142,12 +184,14 @@ private static final String TRACKS_COL = "tracks";
         if (cursor.moveToFirst()) {
             do {
                 int link_id = cursor.getInt(0);
+                String name_txt = cursor.getString(1);
                 String link_txt = cursor.getString(2);
                 String link_decription = cursor.getString(3);
                 int note_index = notes_list.size();
-                notes_list.add(new Note(link_id,link_txt,link_txt,link_decription));
+                notes_list.add(new Note(link_id,name_txt,link_txt,link_decription));
 
                 Log.i("link text", link_txt);
+                Log.i("name text", name_txt);
 
                 // get  the  data into array,or class variable
             } while (cursor.moveToNext());

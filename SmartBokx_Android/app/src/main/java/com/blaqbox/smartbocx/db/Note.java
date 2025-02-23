@@ -1,10 +1,18 @@
 package com.blaqbox.smartbocx.db;
 
+import android.os.Build;
+import android.util.Log;
+
 import com.blaqbox.smartbocx.Models.NoteJson;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 
 public class Note {
 
-    public int note_id;
+    public long note_id;
 
     public int note_index;
     public String note_name;
@@ -13,6 +21,16 @@ public class Note {
 
     public Note(String anote_name, String anote_link, String anote_description)
     {
+        if(Build.VERSION.SDK_INT>25) {
+            note_id = Instant.now().getEpochSecond();
+        }
+        else{
+            note_id = new Date().getTime();
+        }
+
+        Log.i("Note_ID",""+note_id);
+        Log.i("Note_name",anote_name);
+        Log.i("Note_link",anote_link);
         note_name = anote_name;
         note_description = anote_description;
         note_link = anote_link;

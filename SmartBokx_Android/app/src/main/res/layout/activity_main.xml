@@ -58,7 +58,7 @@
                 android:backgroundTint="@color/content_deep_color"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
-            <LinearLayout
+            <!--LinearLayout
 
                 android:layout_width="wrap_content"
                 android:orientation="vertical"
@@ -86,7 +86,7 @@
                     android:foregroundTint="@color/white"
                     android:layout_width="32dp"
                     android:layout_height="31dp" />
-            </LinearLayout>
+            </LinearLayout-->
             <LinearLayout
                 android:layout_gravity="right"
                 android:layout_width="wrap_content"
