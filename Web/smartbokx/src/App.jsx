@@ -6,7 +6,7 @@ import {BrowserRouter as Router, Routes, Route, useNavigate} from "react-router-
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 //import {LoginPage} from "./pages/LoginPage"
 //import 'bootstrap'
-export const supabase = createClient('https://bjzhvayyfwkhmymmpuqf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqemh2YXl5ZndraG15bW1wdXFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjI1NDk3MTMsImV4cCI6MjAzODEyNTcxM30.PdBzt2HO0jCVlfpG1F7pG8OceezOO-1VRK8MerUS6a4')
+export const supabase = createClient('https://bjzhvayyfwkhmymmpuqf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqemh2YXl5ZndraG15bW1wdXFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5MDM3ODUsImV4cCI6MjA1NjQ3OTc4NX0._vPf-PnljXLUWMrPIj7iFwbimCnPupubUglK2qn5oZQ')
 
 
 const Login = React.lazy(()=>import("./pages/LoginPage"))
