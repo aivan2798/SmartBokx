@@ -92,25 +92,39 @@ function BokxAIBody(client){
     const note_content = useRef()
 
     const [add_note_dialog_state,showAddNoteDialog] = useState(false)
+    const [bokx_results,addResults] = useState([])
+    
+    const renderedOutput = bokx_results.map(item => <QnBox note_data={item}/>)
+
     return(
         <>
             <div className="main_dashboard_body">
-            <div className="container">
-                    <form>
-                            <div className="form-group row">
-                                <div className="col-sm-2"></div>
-                                <div className="col-sm-6">
-                                    <div id="search_id" className="input-container">
-                                        
-                                        <input id="search_input" ref={note_title} type="text" placeholder="ask bokx" className="form-control"/>
-                                        <Button variant="contained"><Psychology/></Button>
+                <div className="container">
+                        <form>
+                                <div className="form-group row">
+                                    <div className="col-sm-2"></div>
+                                    <div className="col-sm-6">
+                                        <div id="search_id" className="input-container">
+                                            
+                                            <input id="search_input" ref={note_title} type="text" placeholder="ask bokx" className="form-control"/>
+                                            <Button variant="contained" onClick={
+                                                async()=>{
+                                                const bokx_qnt = note_title.current.value
+                                                //alert(bokx_qnt)
+                                                addResults([...bokx_results,bokx_qnt])
+                                                //const bokx_ans = await bokx_man.askBokx(bokx_qnt)
+                                                //addResults([...bokx_results,bokx_ans])
+                                                }
+                                            }><Psychology/></Button>
+                                        </div>
                                     </div>
+                                    
                                 </div>
-                                
-                            </div>
 
-                    </form>
+                        </form>
+                        
                 </div>
+                {renderedOutput}
             </div>
             
         </>
@@ -126,6 +140,36 @@ function NoteBox({note_data}){
                 <div className="note-bokx">
                     <div className="note_title">{note_link}</div>
                     <div className="note_content">{note_content}</div>
+                </div>
+                
+            
+        </div>
+    )
+}
+
+function QnBox({note_data}){
+    
+    return(
+        <div className="container">
+                
+                <div className="note-bokx">
+                    <div className="note_title">User</div>
+                    <div className="note_content">{note_data}</div>
+                </div>
+                
+            
+        </div>
+    )
+}
+
+function AnsBox({note_data}){
+    
+    return(
+        <div className="container">
+                
+                <div className="note-bokx">
+                    <div className="note_title">Bokx AI</div>
+                    <div className="note_content">{note_data}</div>
                 </div>
                 
             

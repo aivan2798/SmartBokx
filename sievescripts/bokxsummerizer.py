@@ -10,7 +10,7 @@ class BokxURL():
         import supabase
         
         supabase_url = "https://bjzhvayyfwkhmymmpuqf.supabase.co"
-        supabase_api_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqemh2YXl5ZndraG15bW1wdXFmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyMjU0OTcxMywiZXhwIjoyMDM4MTI1NzEzfQ.4X3qtti2AtU8TR7Pr4jmGindl1KzqSwX9pSt1ggsdW8"#os.getenv("supabase_api_key")
+        supabase_api_key = ""#os.getenv("supabase_api_key")
         self.bucket_name = "bokxbucket"
         
         self.supabase_man = supabase.create_client(supabase_url,supabase_api_key)

@@ -91,6 +91,29 @@ export class Bokxman{
         return notes_data
     }
 
+    async askBokx(query){
+        const query_job = await fetch(this.bokx_url+"/bokx/model",{
+            headers:{
+                "x-bokx-key": this.supabase_token,
+                'Content-Type': 'application/json'
+            },
+            method:"POST",
+            body:JSON.stringify({
+                content:query,
+                route:"query"
+            })
+        })
+        console.log(query_job)
+        const notes_reply = await query_job.json()
+        console.log(notes_reply)
+
+        const poll_reply = await this.pollJob(notes_reply.job_id)
+        const notes_data = poll_reply.outputs[0].answer
+        console.log(notes_data)
+
+        return notes_data
+    }
+
     async addNote(this_note_link,this_note_content){
         const all_notes = await fetch(this.bokx_url+"/bokx/model",{
             headers:{
