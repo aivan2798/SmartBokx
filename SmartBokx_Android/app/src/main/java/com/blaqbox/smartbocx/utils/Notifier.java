@@ -67,6 +67,7 @@ public class Notifier
         auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE");
         auto_intent.putExtra("MAIN_NOTE",content);
 
+
         PendingIntent auto_note_reply_intent = PendingIntent.getBroadcast(context,1998,auto_intent,PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Action auto_note_description_action  = new NotificationCompat.Action.Builder(android.R.drawable.ic_menu_send,"auto gen note",auto_note_reply_intent).build();
 
@@ -118,15 +119,15 @@ public class Notifier
             notes_notification_manager = context.getSystemService(NotificationManager.class);
         }
         int note_status = intent.getIntExtra("NOTE_STATUS",200);
-        String note_title = intent.getStringExtra("MAIN_NOTE");
-
+        String xnote_title = intent.getStringExtra("MAIN_NOTE");
+        String note_title = (note_status>200)? xnote_title+", "+"Note Not Saved" : xnote_title+" : "+"Note Saved";
         String note_data = intent.getStringExtra("note_description");
                 //remoteInput.getString("note_description");
         String receive_action = intent.getAction();
         String channel_id = context.getPackageName()+"note_bundle";
         NotificationCompat.Builder notification_builder = new NotificationCompat.Builder(context,channel_id)
                 .setSmallIcon(R.drawable.smartbocx_txt_foreground)
-                .setContentTitle(note_title+" : Note Saved")
+                .setContentTitle(note_title)
                 .setContentText(note_data)
                 .setAutoCancel(false)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);

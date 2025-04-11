@@ -3,7 +3,7 @@ function getAllNotes(supabase_token){
 }
 
 export class Bokxman{
-    bokx_url = "https://ty051i.buildship.run";
+    bokx_url = "https://u7pyeg.buildship.run"//"https://ty051i.buildship.run";
     
     constructor(supabase_token){
         this.supabase_token = supabase_token
@@ -56,7 +56,7 @@ export class Bokxman{
             }
             const bokx_data = await response.json()
             //console.log(error)
-    
+            console.log("fetch okay")
             return {initdata: bokx_data,initerror:null}
     
         }
@@ -84,8 +84,8 @@ export class Bokxman{
         const notes_reply = await all_notes.json()
         console.log(notes_reply)
 
-        const poll_reply = await this.pollJob(notes_reply.job_id)
-        const notes_data = poll_reply.outputs[0].data
+        //const poll_reply = await this.pollJob(notes_reply.job_id)
+        const notes_data = notes_reply//poll_reply.outputs[0].data
         console.log(notes_data)
 
         return notes_data
@@ -107,8 +107,8 @@ export class Bokxman{
         const notes_reply = await query_job.json()
         console.log(notes_reply)
 
-        const poll_reply = await this.pollJob(notes_reply.job_id)
-        const notes_data = poll_reply.outputs[0].answer
+        //const poll_reply = await this.pollJob(notes_reply.job_id)
+        const notes_data = notes_reply//poll_reply.outputs[0].answer
         console.log(notes_data)
 
         return notes_data

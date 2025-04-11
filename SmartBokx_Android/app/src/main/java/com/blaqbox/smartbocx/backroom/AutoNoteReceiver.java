@@ -60,39 +60,63 @@ public class AutoNoteReceiver extends BroadcastReceiver {
         {
             notes_notification_manager = context.getSystemService(NotificationManager.class);
         }
+        String intent_action = intent.getAction();
+        if(intent_action=="com.blaqbokx.smartbocx.AUTO_NOTE") {
+            Intent main_auto_intent = new Intent(context, NoteReceiver.class);
+            main_auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE");
+            main_auto_intent.putExtra("MAIN_NOTE", "Auto Generating");
+            main_auto_intent.putExtra("note_description", "Please wait ....");
+            main_auto_intent.putExtra("NOTE_STATUS", 500);
 
-        Intent main_auto_intent = new Intent(context, NoteReceiver.class);
-        main_auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE");
-        main_auto_intent.putExtra("MAIN_NOTE","Auto Generating");
-        main_auto_intent.putExtra("note_description","Please wait ....");
-        main_auto_intent.putExtra("NOTE_STATUS",500);
+            broadcast_notifier.showSavedNoteNotification(context, notes_notification_manager, main_auto_intent);
+            query_string = intent.getStringExtra("MAIN_NOTE");
+            Log.i("using url", query_string);
 
-        broadcast_notifier.showSavedNoteNotification(context,notes_notification_manager,main_auto_intent);
-        query_string = intent.getStringExtra("MAIN_NOTE");
-        Log.i("using url",query_string);
+            bokxman = DataConnector.getBokxmanInstance();
 
-        bokxman = DataConnector.getBokxmanInstance();
+            bokxAPICallBack = new BokxAPICallBack();
+            user_session = DataConnector.getUserSession();
+            if (user_session != null) {
+                String user_id = user_session.getUser().getId();
+                QABuilder qa_made_json = new QABuilder(query_string, "auto_gen", user_id);
+                QAModel qaModel = qa_made_json.getQAModel();
+                SieveBaseModel sieveBaseModel = new SieveBaseModel(qaModel);
+                String made_json = qa_made_json.makeJson();
+                Log.i("Generated JSON", made_json);
+                bokxAPIHelper = new BokxAPIHelper(bokx_url, user_session.getAccessToken());
+                bokxAPIHelper.setBokxCallback(bokxAPICallBack);
+                bokxAPIHelper.pushJob(made_json);
+            } else {
+                Log.i("user__stat__session", "user sesssion null");
+                Intent auto_intent = new Intent(context, NoteReceiver.class);
+                auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE");
+                auto_intent.putExtra("MAIN_NOTE","User Error");
+                auto_intent.putExtra("note_description","Please Open Bokx and sign in");
+                auto_intent.putExtra("NOTE_STATUS",500);
 
-        bokxAPICallBack = new BokxAPICallBack();
-        user_session = DataConnector.getUserSession();
-        if (user_session != null) {
-            String user_id = user_session.getUser().getId();
-            QABuilder qa_made_json = new QABuilder(query_string,"auto_gen",user_id);
-            QAModel qaModel = qa_made_json.getQAModel();
-            SieveBaseModel sieveBaseModel = new SieveBaseModel(qaModel);
-            String made_json = qa_made_json.makeJson();
-            Log.i("Generated JSON",made_json);
-            bokxAPIHelper = new BokxAPIHelper(bokx_url,user_session.getAccessToken());
-            bokxAPIHelper.setBokxCallback(bokxAPICallBack);
-            bokxAPIHelper.pushJob(made_json);
-        }
-        else{
-            Log.i("user__stat__session","user sesssion null");
-        }
+                broadcast_notifier.showSavedNoteNotification(context,notes_notification_manager,auto_intent);
+            }
 
         /*while(job_finished==false){
             Log.i("WAIT RESPONSE","waiting response");
         }*/
+        }
+        else{
+            Log.i("AUTO_GEN_REPLY","got autogen reply");
+            String query_answer = intent.getStringExtra("MAIN_NOTE");
+            String query_main = intent.getStringExtra("TARGET");
+            int query_code = intent.getIntExtra("STATUS",0);
+
+            Log.i("AUTO_GEN_RESULTS: ",query_code+" : "+query_main+" : "+query_answer);
+            Intent auto_intent = new Intent(context, NoteReceiver.class);
+            auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE");
+            auto_intent.putExtra("MAIN_NOTE",query_main);
+            auto_intent.putExtra("note_description",query_answer);
+            auto_intent.putExtra("NOTE_STATUS",query_code);
+
+
+            broadcast_notifier.showSavedNoteNotification(context,notes_notification_manager,auto_intent);
+        }
     }
 
     public class BokxAPICallBack implements Callback {
@@ -110,8 +134,7 @@ public class AutoNoteReceiver extends BroadcastReceiver {
         }
 
         @Override
-        public void onResponse(@NonNull Call call, @NonNull Response sieve_response) throws IOException
-        {
+        public void onResponse(@NonNull Call call, @NonNull Response sieve_response) throws IOException {
             String request_headers = call.request().headers().toString();
             Buffer kk = new Buffer();
             //call.request().body().writeTo(kk);
@@ -123,105 +146,113 @@ public class AutoNoteReceiver extends BroadcastReceiver {
             int response_code = sieve_response.code();
             String response_headers = sieve_response.headers().toString();
             String response_msg = sieve_response.message();
-            Log.i("unirest response json", json_str+"\n"+response_code+":\t"+response_headers+"\nresponse_msg"+response_msg);
+            Log.i("unirest response json", json_str + "\n" + response_code + ":\t" + response_headers + "\nresponse_msg" + response_msg);
 
-            try {
-                JSONObject job_json = new JSONObject(json_str);
-                int request_status = job_json.getInt("status");
+            if (response_code > 200) {
+                Intent auto_intent = new Intent(context, NoteReceiver.class);
+                auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE");
+                auto_intent.putExtra("MAIN_NOTE","REQUEST ERROR");
+                auto_intent.putExtra("note_description","USER ERROR");
+                auto_intent.putExtra("NOTE_STATUS",500);
 
-                if(request_status>200){
+                broadcast_notifier.showSavedNoteNotification(context,notes_notification_manager,auto_intent);
+                job_finished = true;
+            }
+            else{
+                try {
+                    JSONObject job_json = new JSONObject(json_str);
+                    int request_status = job_json.getInt("status");
 
-                    String error_message = job_json.getString("message");
+                    if (request_status > 200) {
 
-                    Log.i("Job Status"," Job has been finished");
-                    Intent auto_intent = new Intent(context, NoteReceiver.class);
-                    auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE");
-                    auto_intent.putExtra("MAIN_NOTE","error_message");
-                    auto_intent.putExtra("note_description",error_message);
-                    auto_intent.putExtra("NOTE_STATUS",500);
+                        String error_message = job_json.getString("message");
 
-                    broadcast_notifier.showSavedNoteNotification(context,notes_notification_manager,auto_intent);
-                    job_finished = true;
-                    return;
-                }
-                String job_status = job_json.getString("job_status");
-                String job_id = job_json.getString("job_id");
-                if(job_status.equals("finished")){
-                    JSONArray json_outputs = job_json.getJSONArray("outputs");
-                    JSONObject query_output = json_outputs.getJSONObject(0);
-                    JSONObject json_credits = job_json.getJSONObject("credits");
-                    JSONObject json_bokx_credits = json_credits.getJSONObject("bokx_details");
+                        Log.i("Job Status", " Job has been finished");
+                        Intent auto_intent = new Intent(context, NoteReceiver.class);
+                        auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE");
+                        auto_intent.putExtra("MAIN_NOTE", "error_message");
+                        auto_intent.putExtra("note_description", error_message);
+                        auto_intent.putExtra("NOTE_STATUS", 500);
 
-                    int bokx_responses_limit = json_bokx_credits.getInt("bokx_responses_limit");
-                    int bokx_responses = json_bokx_credits.getInt("bokx_responses");
-                    int bokx_request_limit = json_bokx_credits.getInt("bokx_request_limit");
-                    int bokx_requests = json_bokx_credits.getInt("bokx_requests");
-
-                    if(UrlTools.isValidUrl(query_string))
-                    {
-                        query_string = UrlTools.check(query_string);
+                        broadcast_notifier.showSavedNoteNotification(context, notes_notification_manager, auto_intent);
+                        job_finished = true;
+                        return;
                     }
-                    JSONObject query_json_answer = query_output;
-                    int status_code = query_json_answer.getInt("status_code");
-                    String query_answer = query_json_answer.getString("message");
-                    Log.i("Job Status"," Job has been finished: "+ query_string);
-                    Intent auto_intent = new Intent(context, NoteReceiver.class);
-                    auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE");
-                    auto_intent.putExtra("MAIN_NOTE",query_string);
-                    auto_intent.putExtra("note_description",query_answer);
-                    auto_intent.putExtra("NOTE_STATUS",status_code);
+                    String job_status = job_json.getString("job_status");
+                    String job_id = job_json.getString("job_id");
+                    if (job_status.equals("finished")) {
+                        JSONArray json_outputs = job_json.getJSONArray("outputs");
+                        JSONObject query_output = json_outputs.getJSONObject(0);
+                        JSONObject json_credits = job_json.getJSONObject("credits");
+                        JSONObject json_bokx_credits = json_credits.getJSONObject("bokx_details");
+
+                        int bokx_responses_limit = json_bokx_credits.getInt("bokx_responses_limit");
+                        int bokx_responses = json_bokx_credits.getInt("bokx_responses");
+                        int bokx_request_limit = json_bokx_credits.getInt("bokx_request_limit");
+                        int bokx_requests = json_bokx_credits.getInt("bokx_requests");
+
+                        if (UrlTools.isValidUrl(query_string)) {
+                            query_string = UrlTools.check(query_string);
+                        }
+                        JSONObject query_json_answer = query_output;
+                        int status_code = query_json_answer.getInt("status_code");
+                        String query_answer = query_json_answer.getString("message");
+                        Log.i("Job Status", " Job has been finished: " + query_string);
+                        Intent auto_intent = new Intent(context, NoteReceiver.class);
+                        auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE");
+                        auto_intent.putExtra("MAIN_NOTE", query_string);
+                        auto_intent.putExtra("note_description", query_answer);
+                        auto_intent.putExtra("NOTE_STATUS", status_code);
 
 
-                    broadcast_notifier.showSavedNoteNotification(context,notes_notification_manager,auto_intent);
+                        broadcast_notifier.showSavedNoteNotification(context, notes_notification_manager, auto_intent);
 
-                }
-                else if(job_status.equals("error")){
-                    String error_message = "bokx processing error";
+                    } else if (job_status.equals("error")) {
+                        String error_message = "bokx processing error";
 
-                    Log.i("Job Status"," Job has been finished");
-                    Intent auto_intent = new Intent(context, NoteReceiver.class);
-                    auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE");
-                    auto_intent.putExtra("MAIN_NOTE","error_message");
-                    auto_intent.putExtra("note_description",error_message);
-                    auto_intent.putExtra("NOTE_STATUS",500);
+                        Log.i("Job Status", " Job has been finished");
+                        Intent auto_intent = new Intent(context, NoteReceiver.class);
+                        auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE");
+                        auto_intent.putExtra("MAIN_NOTE", "error_message");
+                        auto_intent.putExtra("note_description", error_message);
+                        auto_intent.putExtra("NOTE_STATUS", 500);
 
-                    broadcast_notifier.showSavedNoteNotification(context,notes_notification_manager,auto_intent);
-                    job_finished = true;
-                    return;
-                }
-                else if(job_status.equals("queued")){
-                    recent_job = job_id;
-                    model_free = false;
+                        broadcast_notifier.showSavedNoteNotification(context, notes_notification_manager, auto_intent);
+                        job_finished = true;
+                        return;
+                    } else if (job_status.equals("queued")) {
+                        recent_job = job_id;
+                        model_free = false;
 
 
-
-                    new Thread(
-                            new Runnable() {
-                                @Override
-                                public void run() {
-                                    bokxAPIHelper.getJob(job_id);
+                        /*
+                        new Thread(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        bokxAPIHelper.getJob(job_id);
+                                    }
                                 }
-                            }
 
-                    ).run();
-                }
-                else{
-                    Log.i("Job Status",job_status);
-                    new Thread(
-                            new Runnable() {
-                                @Override
-                                public void run() {
-                                    bokxAPIHelper.getJob(job_id);
+                        ).run();
+                        */
+                    } else {
+                        Log.i("Job Status", job_status);
+                        /*new Thread(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        bokxAPIHelper.getJob(job_id);
+                                    }
                                 }
-                            }
 
-                    ).run();
+                        ).run();*/
+                    }
+
+                } catch (Exception except) {
+                    Log.e("call back error", except.getMessage());
                 }
-
-            }
-            catch(Exception except){
-                Log.e("call back error",except.getMessage());
-            }
+        }
 
         }
     }

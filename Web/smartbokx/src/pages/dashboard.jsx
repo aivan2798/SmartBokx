@@ -10,12 +10,17 @@ import "./styles/dashboard.css"
 import { Fab, Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField} from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import { Psychology, SearchRounded } from "@mui/icons-material";
+import PersonIcon from '@mui/icons-material/Person';
 import { Navigate, useNavigate } from "react-router-dom";
 import { Bokxman } from "../api/bokx_api";
+// Import the functions you need from the SDKs you need
+
+import { CircleLoader } from "react-spinners";
 
 //import {SxProps} from "@mui/system";
-const endpoint = "https://ty051i.buildship.run/bokx/model"
+const endpoint = "https://u7pyeg.buildship.run"//"https://ty051i.buildship.run/bokx/model"
 var bokx_man = null
+let msg_channel = null;
 //let bokx_man = null
 function CategoryCard(){
 
@@ -86,16 +91,37 @@ function SearchBody({user_notes}){
 }
 
 
-function BokxAIBody(client){
+function BokxAIBody({bokx_results,addResults}){
     
+    console.log("bokx_body ready")
     const note_title = useRef()
     const note_content = useRef()
 
     const [add_note_dialog_state,showAddNoteDialog] = useState(false)
-    const [bokx_results,addResults] = useState([])
     
-    const renderedOutput = bokx_results.map(item => <QnBox note_data={item}/>)
+    
+    
+    const [new_style,setNewStyle] = useState()
+    /*const renderedOutput = bokx_results.map((item) =>{
+        //setNewStyle();
+        console.log("making new input")
+        return <QnBox note_data={item}/>})
+    */
+    /*useEffect(()=>{
+        console.log("bokx effect up")
 
+        if(channel_route!=null){
+            channel_route.on("broadcast",{"event":"bokx_qa"},
+                (payload)=>{
+                    console.log("bokx_ai_reply: ",payload)
+                    setNewStyle({})
+                }
+            )
+        }
+        
+    },channel_route)
+    */
+                        
     return(
         <>
             <div className="main_dashboard_body">
@@ -109,13 +135,17 @@ function BokxAIBody(client){
                                             <input id="search_input" ref={note_title} type="text" placeholder="ask bokx" className="form-control"/>
                                             <Button variant="contained" onClick={
                                                 async()=>{
+                                                    setNewStyle({animation:"psycho_think 1s infinite alternate-reverse"})
                                                 const bokx_qnt = note_title.current.value
                                                 //alert(bokx_qnt)
-                                                addResults([...bokx_results,bokx_qnt])
-                                                //const bokx_ans = await bokx_man.askBokx(bokx_qnt)
+                                                const qtag = <QnBox note_data={bokx_qnt}/>
+                                                console.log("bokx results: ",bokx_results)
+                                                addResults([...bokx_results,qtag])
+                                                const bokx_ans = await bokx_man.askBokx(bokx_qnt)
                                                 //addResults([...bokx_results,bokx_ans])
+                                                
                                                 }
-                                            }><Psychology/></Button>
+                                            }><Psychology className="psycho_logo" style={new_style}/></Button>
                                         </div>
                                     </div>
                                     
@@ -124,7 +154,7 @@ function BokxAIBody(client){
                         </form>
                         
                 </div>
-                {renderedOutput}
+                {bokx_results}
             </div>
             
         </>
@@ -138,7 +168,7 @@ function NoteBox({note_data}){
         <div className="container">
                 
                 <div className="note-bokx">
-                    <div className="note_title">{note_link}</div>
+                    <div className="note_title"><Psychology/>{note_link}</div>
                     <div className="note_content">{note_content}</div>
                 </div>
                 
@@ -153,7 +183,7 @@ function QnBox({note_data}){
         <div className="container">
                 
                 <div className="note-bokx">
-                    <div className="note_title">User</div>
+                    <div className="note_title"><PersonIcon/>User</div>
                     <div className="note_content">{note_data}</div>
                 </div>
                 
@@ -178,7 +208,7 @@ function AnsBox({note_data}){
 }
 
 function DashboardBody({all_notes,notesSetter,bokxman_instance}){
-    console.log(all_notes)
+    //console.log(all_notes)
     const note_title = useRef()
     const note_content = useRef()
     var renderedOutput = all_notes.map(item => <NoteBox note_data={item}/>)
@@ -234,11 +264,17 @@ function DashboardBody({all_notes,notesSetter,bokxman_instance}){
     );
 }
 
+function messageReceived(payload) {
+    console.log("RECEIVED WS PAYLOAD: ",payload)
+    console.log("receieved_data: ",payload.payload.message)
+  }
+
+
 function Dashboard({active_session}){
 
     const active_user = "active_session."
     
-    
+    const [xbokx_results,xaddResults] = useState([])
     const navigate = useNavigate()
     
     const [all_notes,setAllNotes] = useState([{
@@ -253,11 +289,42 @@ function Dashboard({active_session}){
         "title": "Link Note",
         "id": "1007"
       },])
+    
+    const [global_loader,setGlobalLoader] = useState(false)
 
-      useEffect(()=>{
+    const bokxman_qaboter = (payload)=>{
+        console.log("gotten new boter data")
+        const all_datum = payload.payload.message
+        console.log("gotten new boter data: ",all_datum)
+        const all_data = [Object.fromEntries(all_datum.map((x)=>[x.Key,x.Value]))]
+        console.log("\t all notes wh: ",all_datum[0])
+        console.log("data sample: ",all_data)
+        const ans_tag = <AnsBox note_data={all_data[0].answer}/>
+        console.log(xbokx_results)
+        xaddResults([...xbokx_results,ans_tag])
+        //setGlobalLoader(false)
+    }
+    
+    const bokxman_boter = (payload)=>{
+        console.log("gotten new boter data")
+        const all_datum = payload.payload.message
+        const all_data = all_datum.map((active_arr)=>Object.fromEntries(active_arr.map((x)=>[x.Key,x.Value])))
+        console.log("\t all notes wh: ",all_datum[0])
+        console.log("data sample: ",all_data[0])
+        setAllNotes(all_data)
+        setGlobalLoader(false)
+    }
+
+    const bokxman_qa = (payload)=>{
+        const all_data = payload.payload.message
+        setAllNotes(all_data)
+    }
+    
+    useEffect(()=>{
         active_session.auth.getSession().then(async({data,error})=>{
-            console.log(data)
-            console.log(error)
+            
+            //console.log(data)
+            //console.log(error)
             setAllNotes([])
             if(data.session!=null){
                 console.log("session present")
@@ -270,10 +337,42 @@ function Dashboard({active_session}){
                     console.log(error)
                 }
                 else if(initdata){
-                    console.log(data)
-                    const all_user_notes = await bokx_man.getAllNotes()
+                    console.log(initdata)
+                    const channel_name = initdata.channel_name
+                    console.log("using channel: ",channel_name)
+                    msg_channel = active_session.channel(channel_name,{
+                        config: {
+                          broadcast: { self: true },
+                        }
+                    })
+                    
+                    msg_channel.on("broadcast",{"event":"siever"},
+                        (payload)=>messageReceived(payload)
+                    )
 
-                    setAllNotes(all_user_notes)
+                    msg_channel.on("broadcast",{"event":"all_notes"},
+                        (payload)=>bokxman_boter(payload)
+                    )
+
+                    msg_channel.on("broadcast",{"event":"bokx_qa"},
+                        (payload)=>{
+                            console.log("xxbokx_ai_reply: ",payload)
+                            //setNewStyle({})
+                            bokxman_qaboter(payload)
+                        }
+                    )
+
+                    
+
+                    msg_channel.subscribe((status) => {
+                        if (status !== 'SUBSCRIBED') { return }
+                        
+                      })
+                        
+                    //const all_user_notes = await bokx_man.getAllNotes()
+                    //console.log("all user notes: ",all_user_notes)
+                    //setAllNotes(all_user_notes)
+                    
                 }
                 else if(error_message){
                     console.log("\t\t__CONNECTION ERROR: "+error_message)
@@ -289,6 +388,7 @@ function Dashboard({active_session}){
                     
                         })
     },[])
+    
     return (
         <>
         <Navbar collapseOnSelect expand="lg"
@@ -351,9 +451,18 @@ function Dashboard({active_session}){
                         <SearchBody user_notes={all_notes}/>
                     </Tab>
                     <Tab eventKey="ai_search" title="Bokx AI">
-                        <BokxAIBody/>
+                        <BokxAIBody bokx_results={xbokx_results} addResults={xaddResults}/>
                     </Tab>
             </Tabs>
+            <Dialog
+                    open={global_loader}>
+                <DialogTitle>FETCHING DATA</DialogTitle>
+                <DialogContent>
+                    <CircleLoader color="black" size={30}/>
+                </DialogContent>
+            
+            </Dialog>
+            
                 
             </div>
             <div className="col-sm-2">

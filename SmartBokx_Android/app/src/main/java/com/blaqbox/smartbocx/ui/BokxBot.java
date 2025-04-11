@@ -202,10 +202,10 @@ public class BokxBot extends Fragment {
             bokxAPICallBack = new BokxAPICallBack();
             bokxAPIHelper.setBokxCallback(bokxAPICallBack);
             // Inflate the layout for this fragment
-            search_results = new ArrayList<NoteQA>();
+            search_results = DataConnector.getAllAIResults();//new ArrayList<NoteQA>();
             find_notes_view = inflater.inflate(R.layout.fragment_bokxbot, container, false);
-            note_results_adapter = new NoteQAAdapter(search_results);
-
+            //note_results_adapter = new NoteQAAdapter(search_results);
+            note_results_adapter = DataConnector.getNoteQAAdapter();
             note_query_input = find_notes_view.findViewById(R.id.find_notes_context);
 
 
@@ -599,7 +599,7 @@ public class BokxBot extends Fragment {
                         }
                     });
 
-
+                    /*
                     new Thread(
                             new Runnable() {
                                 @Override
@@ -609,10 +609,11 @@ public class BokxBot extends Fragment {
                             }
 
                     ).run();
+                    */
                 }
                 else{
                     Log.i("Job Status",job_status);
-                    new Thread(
+                    /*new Thread(
                             new Runnable() {
                                 @Override
                                 public void run() {
@@ -621,6 +622,7 @@ public class BokxBot extends Fragment {
                             }
 
                     ).run();
+                    */
                 }
 
             }

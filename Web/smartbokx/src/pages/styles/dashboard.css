@@ -98,3 +98,10 @@
     width: 100vw;
 }
 
+
+
+@keyframes psycho_think{
+    from{transform: scale(1,-1);}
+    to{transform: scale(-1,1);}
+    
+}

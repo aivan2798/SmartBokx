@@ -1,6 +1,6 @@
 import sieve,os
 
-@sieve.Model(name="bokxbot",environment_variables=[sieve.Env(name="open_ai_key", description="open ai key from tune ai"),sieve.Env(name="pinecone_key", description="Pinecone Key", default="")],python_packages=["pinecone","transformers","sentence-transformers","openai","langchain","langchainhub","langchain-community",""])
+@sieve.Model(name="bokxbot",environment_variables=[sieve.Env(name="open_ai_key", description="open ai key from tune ai"),sieve.Env(name="supabase_api_key",description="supabase service api",default=""),sieve.Env(name="pinecone_key", description="Pinecone Key", default="")],python_packages=["pinecone","transformers","sentence-transformers","openai","langchain","langchainhub","langchain-community",""])
 class BokxBot():
     
     def __setup__(self):
@@ -52,12 +52,14 @@ class BokxBot():
             self.prompt = hub.pull("pwoc517/crafted_prompt_for_rag")
             self.chat_model = ChatOpenAI(
                 openai_api_key=self.open_ai_key,
-                openai_api_base="https://proxy.tune.app/",
-                model_name="meta/llama-3.1-405b-instruct"
+                openai_api_base="https://ai.restack.io",
+                model_name="gpt-4o-mini"
+                #model_name="meta/llama-3.1-405b-instruct"
             )
         print("using open ai: ",self.open_ai_key," with pinecone: ",self.pinecone_key)
         raw_text = text["content"]
         cmd = text["route"]
+        channel_name = text["channel_name"]
         user_id = text["user_id"]
         if cmd == "digest":
             default_index = 0
@@ -72,12 +74,16 @@ class BokxBot():
                     self.addIndex(user_id,made_vectors)
                     return {
                                 "message":"sync okay",
-                                "data":to_user
+                                "data":to_user,
+                                "channel_name":channel_name,
+                                "route":cmd
                         }
                 else:
                     return {
                                 "message":"no data to sync",
-                                "data":to_user
+                                "data":to_user,
+                                "channel_name":channel_name,
+                                "route":cmd
                         }
             else:
                 if(len(raw_text)>0):
@@ -85,22 +91,37 @@ class BokxBot():
                     self.addIndex(user_id,made_vectors)
                     return {
                         "message":"sync okay",
-                        "data":[]
+                        "data":[],
+                        "channel_name":channel_name,
+                        "route":cmd
                     }
                 else:
                     return {
                                 "message":"no data to sync",
-                                "data":[]
+                                "data":[],
+                                "channel_name":channel_name,
+                                "route":cmd
                         }
         elif cmd == "query":
             query_answer = self.getAnswer(user_id,raw_text)
-            return query_answer
+            return {
+                        "data":query_answer,
+                        "channel_name":channel_name,
+                        "route":cmd
+                   }
         elif cmd == "auto_gen":
             url_text = self.autoGen(raw_text)
-            return url_text
+            return {
+                        "target":raw_text,
+                        "data":url_text,
+                        "channel_name":channel_name,
+                        "route":cmd
+                   }
         else:
             return {
-                "message":"unknown command"
+                "message":"unknown command",
+                "channel_name":channel_name,
+                "route":cmd
             }
     def xgetAllNotes(self,user_id,notes_count):
         all_ids = []
@@ -248,6 +269,7 @@ class BokxBot():
         out = self.chat_model.predict(active_prompt)
         print(out)
         bot_msg = {
+            
             "answer":out
         }
         return bot_msg

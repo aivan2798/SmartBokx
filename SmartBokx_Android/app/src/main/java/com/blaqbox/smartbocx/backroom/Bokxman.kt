@@ -1,53 +1,58 @@
 package com.blaqbox.smartbocx.backroom
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
-import io.github.jan.supabase.createSupabaseClient
+import com.blaqbox.smartbocx.Models.BokxCredits
+import com.blaqbox.smartbocx.db.NoteQA
+import com.blaqbox.smartbocx.utils.Constants
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.gotrue.Auth
-import io.github.jan.supabase.realtime.Realtime
+import io.github.jan.supabase.gotrue.SessionSource
+import io.github.jan.supabase.gotrue.SessionStatus
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.gotrue.user.UserSession
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.GlobalScope
-import androidx.lifecycle.lifecycleScope
-import com.blaqbox.smartbocx.Models.BokxCredits
-import com.blaqbox.smartbocx.ui.BokxBot
-import com.blaqbox.smartbocx.utils.Constants
-import io.github.jan.supabase.SupabaseClientBuilder
-import io.github.jan.supabase.exceptions.BadRequestRestException
-import io.github.jan.supabase.exceptions.RestException
-import io.github.jan.supabase.gotrue.SessionSource
-import io.github.jan.supabase.gotrue.SessionStatus
-import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.realtime.RealtimeChannel
-import io.github.jan.supabase.realtime.RealtimeChannelBuilder
-import io.github.jan.supabase.realtime.RealtimeRateLimitException
+import io.github.jan.supabase.realtime.broadcastFlow
 import io.github.jan.supabase.realtime.channel
-import io.github.jan.supabase.realtime.realtime
-import io.ktor.util.Identity.decode
 import io.ktor.utils.io.printStack
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import java.util.Date
 
 
 public class Bokxman(context: Context , sb_key: String, sb_url: String,val auth_status: MutableLiveData<Boolean>){
     lateinit var supa_client: SupabaseClient
+    lateinit var dataConnector: DataConnector
     lateinit var auth_status_in: MutableLiveData<Boolean>
     lateinit var shared_prefs: SharedPreferences
+    lateinit var channel_name: String
+    lateinit var active_channel: RealtimeChannel
     init {
 
         supa_client = createSupabaseClient(sb_url, sb_key) {
             install(Auth)
             install(Realtime)
             install(Postgrest)
+            
             useHTTPS = true
         }
         shared_prefs = context.getSharedPreferences("AUTH",Context.MODE_PRIVATE)
@@ -174,6 +179,10 @@ public class Bokxman(context: Context , sb_key: String, sb_url: String,val auth_
 
         }
     }
+
+    fun initBokxman(){
+        dataConnector = DataConnector.getInstance()
+    }
     fun getUserSession():UserSession?{
         /*
         var session_fin: Boolean = false
@@ -268,10 +277,206 @@ public class Bokxman(context: Context , sb_key: String, sb_url: String,val auth_
         return false
     }
 
+    fun setChannelName(channel_to_use:String){
+        channel_name = channel_to_use
+    }
+
     fun logoutUser(){
 
         GlobalScope.launch {
             supa_client.auth.signOut()
+        }
+
+    }
+
+    fun handleEvent(){
+
+    }
+
+    fun openChannel(){
+        Log.i("using channel: ",channel_name)
+        active_channel = supa_client.channel(channel_name)
+
+        /*
+        val broadcastFlow = active_channel.broadcastFlow<JsonObject>(event = "siever")
+// Collect the flow
+        broadcastFlow.onEach { // it: Message
+            println(it)
+        }.launchIn(handleEvent) // launch a new coroutine to collect the flow
+        active_channel.subscribe(blockUntilSubscribed = true)
+        */
+        //runBlocking
+       /* GlobalScope.launch{
+            Log.i("channel update: ","waiting for broadcast")
+            active_channel.subscribe(blockUntilSubscribed = true)
+            Log.i("channel update: ","subscribe finished")
+            active_channel.broadcastFlow<JsonObject>("siever")
+                .collect { message ->
+                    println("Received broadcast: ${message}")
+                }
+
+        }*/
+
+        GlobalScope.launch {
+            active_channel.subscribe(blockUntilSubscribed = true)
+            Log.i("finished subscribing", "okay")
+
+            active_channel.broadcastFlow<JsonObject>("siever").collect {
+                println(it["message"])
+                var bc_msg = it["message"]
+                /*withContext(Dispatchers.Main){
+                    DataConnector.getAllAIResults().clear();
+                    DataConnector.getAllAIResults().add(NoteQA("your answer",bc_msg.toString()))
+                    DataConnector.getNoteQAAdapter().notifyDataSetChanged()
+                }*/
+
+                Log.i("new channel mg", it.toString())
+            }
+        }
+
+        GlobalScope.launch {
+
+            active_channel.broadcastFlow<JsonObject>("bokx_qa").collect {
+                println(it["message"])
+                var arr_bc_msg = it["message"]?.jsonArray
+                var obj_bc_msg = if (arr_bc_msg == null) null else arr_bc_msg.get(0).jsonObject
+                var bc_msg: String = if (obj_bc_msg == null) "No Answer" else obj_bc_msg.get("Value").toString()
+                withContext(Dispatchers.Main){
+
+                    var note_qa: NoteQA = DataConnector.getAllAIResults().get(0)
+                    DataConnector.getAllAIResults().clear();
+                    note_qa.note_answer = bc_msg.removeSurrounding("\"")
+                    DataConnector.getAllAIResults().add(note_qa)
+                    DataConnector.getNoteQAAdapter().notifyDataSetChanged()
+                }
+
+                Log.i("new channel mg",it.toString())
+            }
+
+
+
+
+        }
+
+        GlobalScope.launch {
+
+            active_channel.broadcastFlow<JsonObject>("all_notes").collect {
+                println(it["message"])
+                //[[{"Key":"content","Value":"mt v2 download"},{"Key":"link","Value":"https://mt2.cn/download/"},{"Key":"title","Value":"LINK_NOTE_1743452957198"},{"Key":"id","Value":"0"}]]
+                var arr_bc_msg = it["message"]?.jsonArray
+
+                arr_bc_msg?.forEach {
+                    var my_dic = HashMap<String,String>()
+                    it.jsonArray?.forEach {datum->
+                        var key = datum.jsonObject["Key"].toString().removeSurrounding("\"")
+                        var content = datum.jsonObject["Value"].toString().removeSurrounding("\"")
+                        my_dic.put(key,content)
+                        println(key.toString() + ":" + content)
+                        println(key + ":" + content)
+                    }
+
+
+                    //var str_id = if (my_dic["id"]==null) "0" else my_dic["id"]
+                    //var id: Int = if (str_id!=null) str_id.toInt() else 0
+                    //var temp_note = Note(id,my_dic["title"],my_dic["link"],my_dic["content"])
+                    dataConnector.addNewNotePlain(my_dic["title"],my_dic["link"],my_dic["content"])
+                }
+                //var a_bc_msg = if (arr_bc_msg == null) null else arr_bc_msg.get(0).jsonArray
+
+                //var bc_msg: String = if (obj_bc_msg == null) "No Answer" else obj_bc_msg.get("Value").toString()
+                withContext(Dispatchers.Main){
+                    dataConnector.syncStatus.postValue(true)
+                    dataConnector.refresh()
+                    //DataConnector.getInstance().addNewNote()
+                    //var note_qa: NoteQA = DataConnector.getAllAIResults().get(0)
+                    //DataConnector.getAllAIResults().clear();
+                    //note_qa.note_answer = bc_msg.removeSurrounding("\"")
+                    //DataConnector.getAllAIResults().add(note_qa)
+                    //DataConnector.getNoteQAAdapter().notifyDataSetChanged()
+                }
+
+                Log.i("new channel mg",it.toString())
+            }
+
+
+
+
+        }
+
+        GlobalScope.launch {
+
+            active_channel.broadcastFlow<JsonObject>("bokx_gen").collect {
+                println(it["message"])
+                //message:[{"Key":"target","Value":"https://www.youtube.com/shorts/gVAFSXGuLM0?app=desktop"},{"Key":"message","Value":"The video features a still image of Pain, a character from the anime series Naruto, in a dark-colored robe with the Akatsuki symbol on the back. He stands in front of a destroyed city with rain falling. There are text overlays appearing and disappearing throughout the video. The first one reads \"The most painful thing\". The second text overlay then says \"isn't a cut\", followed by \"or a broken nose\", and finally \"the most painful thing is seeing the people you made memories with slowly become memories\". The video seems to be trying to express the emotional pain of losing loved ones and watching them fade away."}]
+                var arr_bc_msg = it["message"]?.jsonArray
+                var my_dic = HashMap<String,String>()
+                var status_code = 0
+                lateinit var json_content : JsonElement
+                arr_bc_msg?.forEach { datum->
+                        var key = datum.jsonObject["Key"].toString().removeSurrounding("\"")
+                        var content = datum.jsonObject["Value"]
+                        if(key=="status_code"){
+                            status_code = if (content!=null) content.jsonPrimitive.int else 0
+                        }
+                        if(key.equals("message")) {
+                            if (content!=null){
+                                json_content = content
+                            }
+
+
+                        }
+                }
+                if (status_code==200){
+                    if(json_content!=null){
+                        json_content.jsonArray.forEach { datumx->
+                            var xkey = datumx.jsonObject["Key"].toString().removeSurrounding("\"")
+                            var xcontent = datumx.jsonObject["Value"].toString().removeSurrounding("\"")
+                            my_dic.put(xkey,xcontent)
+                            println(xkey.toString() + ":" + xcontent)
+                            println(xkey + ":" + xcontent)
+                        }
+                    }
+
+                }
+
+
+                    //var str_id = if (my_dic["id"]==null) "0" else my_dic["id"]
+                    //var id: Int = if (str_id!=null) str_id.toInt() else 0
+                    //var temp_note = Note(id,my_dic["title"],my_dic["link"],my_dic["content"])
+                    var epoch_sec = Date().time
+                    val note_name = "LINK_NOTE_$epoch_sec"
+                    Log.i("AUTOGEN_NAME",note_name)
+                    //dataConnector.addNewNotePlain(note_name,my_dic["target"],my_dic["message"])
+
+                val auto_intent = Intent(dataConnector.dbContext, AutoNoteReceiver::class.java)
+                auto_intent.setAction("com.blaqbokx.smartbocx.AUTO_NOTE.content")
+                auto_intent.putExtra("MAIN_NOTE", my_dic["message"])
+                auto_intent.putExtra("TARGET",my_dic["target"])
+                auto_intent.putExtra("STATUS",status_code)
+                dataConnector.dbContext.sendBroadcast(auto_intent)
+                }
+                //var a_bc_msg = if (arr_bc_msg == null) null else arr_bc_msg.get(0).jsonArray
+
+                //var bc_msg: String = if (obj_bc_msg == null) "No Answer" else obj_bc_msg.get("Value").toString()
+                /*withContext(Dispatchers.Main){
+                    dataConnector.syncStatus.postValue(true)
+                    dataConnector.refresh()
+                    //DataConnector.getInstance().addNewNote()
+                    //var note_qa: NoteQA = DataConnector.getAllAIResults().get(0)
+                    //DataConnector.getAllAIResults().clear();
+                    //note_qa.note_answer = bc_msg.removeSurrounding("\"")
+                    //DataConnector.getAllAIResults().add(note_qa)
+                    //DataConnector.getNoteQAAdapter().notifyDataSetChanged()
+                }
+                */
+
+
+
+
+
+
+
+
         }
 
     }

@@ -65,6 +65,7 @@ public class BokxAPIHelper {
                     .header("Content-Length", "" + rb.contentLength())
                     .header("Content-Type", "application/json")
                     .post(rb).build();
+
             bokxHttpClient.newCall(request).enqueue(bokx_callback);
             Log.i("Get Job","Job status sent");
         }

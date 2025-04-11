@@ -97,8 +97,8 @@ import okio.Buffer;
 public class MainActivity extends AppCompatActivity {
     Notifier notifier;
 
-    boolean auth_status;
-    BokxAPIHelper bokxAPIHelper;
+    boolean auth_status; //store the authentication status
+    BokxAPIHelper bokxAPIHelper; //helper for sending rest requests to the bokx backend
     String function_name = "";
     String bokxman_sieveman_apikey = "";
     //List<Note> all_notes;
@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
 
         master_dbHandler = DataConnector.getInstance(getApplicationContext());
         bokxman = DataConnector.getBokxmanInstance();
-
+        bokxman.initBokxman();
         notifier = new Notifier(getApplicationContext());
         setContentView(R.layout.activity_main);
         //showAlertDialog("Authorizing","please wait");
@@ -361,7 +361,9 @@ public class MainActivity extends AppCompatActivity {
                                             if (status == 200) {
                                                 String available_qn = "" + json_cedits.getInt("available_questions");
                                                 String available_ans = "" + json_cedits.getInt("available_answers");
-
+                                                String tmp_channel = json_cedits.getString("channel_name");
+                                                bokxman.setChannelName(tmp_channel);
+                                                bokxman.openChannel();
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
@@ -443,6 +445,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        master_dbHandler.getSyncStatus().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if(aBoolean==false){
+
+                }
+                else{
+                    sync_btn.clearAnimation();
+                }
+            }
+        });
+
     }
 
     public void showAlertDialog(String xdialog_title,String xdialog_msg){
@@ -503,11 +517,13 @@ public class MainActivity extends AppCompatActivity {
     {
 
         UserSession xuser_session = bokxman.getUserSession();
+        master_dbHandler.getSyncStatus().setValue(false);
         List<NoteJson> notejson_list = new ArrayList<NoteJson>();
         Log.i("LOGIN STATUS",""+auth_status);
         if((user_session==null)&&(xuser_session!=null)){
             auth_status = bokxman.getLoginStatus();
             user_session = xuser_session;
+
             bokxAPIHelper = new BokxAPIHelper(bokx_url,user_session.getAccessToken());
         }
 
@@ -681,20 +697,21 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void run() {
 
-                                Toast.makeText(getApplicationContext(), "Data Synchronc Started", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "Data Synchronising Started", Toast.LENGTH_LONG).show();
                             }
                         });
 
-
-                        new Thread(
-                                new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        bokxAPIHelper.getJob(job_id);
+                        /*
+                            new Thread(
+                                    new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            bokxAPIHelper.getJob(job_id);
+                                        }
                                     }
-                                }
 
-                        ).run();
+                            ).run();
+                        */
                     }
                     else if (job_status.equals("error")){
                         Log.i("Job Status", " Job has been got error");

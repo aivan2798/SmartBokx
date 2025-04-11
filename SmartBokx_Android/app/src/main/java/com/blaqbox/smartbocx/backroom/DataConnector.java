@@ -12,6 +12,8 @@ import com.blaqbox.smartbocx.Models.BokxCredits;
 import com.blaqbox.smartbocx.R;
 import com.blaqbox.smartbocx.db.DBHandler;
 import com.blaqbox.smartbocx.db.Note;
+import com.blaqbox.smartbocx.db.NoteQA;
+import com.blaqbox.smartbocx.ui.adapters.NoteQAAdapter;
 import com.blaqbox.smartbocx.ui.adapters.NotesListAdapter;
 import com.bokx_lucene.Indexer;
 
@@ -26,6 +28,10 @@ import io.github.jan.supabase.gotrue.user.UserSession;
 public class DataConnector
 {
     private static List<Note> all_notes;
+
+    private static MutableLiveData<Boolean> sync_fin;
+    private static NoteQAAdapter note_results_adapter;
+    private static List<NoteQA> ai_search_results;
     private static String project_url = "";
     private static String project_key = "";
     private static Bokxman bokxman;// = new Bokxman(project_key,project_url);
@@ -50,6 +56,10 @@ public class DataConnector
     {
         all_notes  = new ArrayList<Note>();
 
+    }
+
+    public Context getDbContext() {
+        return db_context;
     }
 
     public static UserSession getUserSession(){
@@ -115,6 +125,9 @@ public class DataConnector
         return auth_status;
     }
 
+    public MutableLiveData<Boolean> getSyncStatus() {
+        return sync_fin;
+    }
     public static void setSession_string(String xsession_string) {
        session_string = xsession_string;
     }
@@ -156,6 +169,10 @@ public class DataConnector
         }
         all_notes = dbHandler.getNotes();
         all_notes_adapter = new NotesListAdapter(all_notes);
+
+        ai_search_results = new ArrayList<NoteQA>();
+        note_results_adapter =  new NoteQAAdapter(ai_search_results);
+        sync_fin = new MutableLiveData<Boolean>(false);
         context_set = true;
         /*
         if (note_index == null) {
@@ -260,6 +277,14 @@ public class DataConnector
     public List<Note> getAllNotes()
     {
         return all_notes;
+    }
+
+    public static NoteQAAdapter getNoteQAAdapter(){
+        return note_results_adapter;
+    }
+    public static List<NoteQA> getAllAIResults()
+    {
+        return ai_search_results;
     }
 
 }

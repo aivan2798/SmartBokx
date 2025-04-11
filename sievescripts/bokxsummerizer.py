@@ -3,21 +3,24 @@ import os
 import urllib 
 import requests
 import datetime
-@sieve.Model(name="bokx_url_analyzer",environment_variables=[sieve.Env(name="supabase_api_key",description="supabase service role key")],python_version="3.10",python_packages=["supabase","moviepy", "tiktok-downloader"],run_commands=["pip install --upgrade pip"])
+@sieve.Model(name="bokx_url_analyzer",environment_variables=[sieve.Env(name="supabase_api_key",description="supabase service api",default="")],python_version="3.10",python_packages=["supabase","moviepy", "tiktok-downloader"],run_commands=["pip install --upgrade pip"])
 class BokxURL():
     
     def __setup__(self):
-        import supabase
         
-        supabase_url = "https://bjzhvayyfwkhmymmpuqf.supabase.co"
-        supabase_api_key = ""#os.getenv("supabase_api_key")
+        
+        self.supabase_url = "https://bjzhvayyfwkhmymmpuqf.supabase.co"
+        
         self.bucket_name = "bokxbucket"
         
-        self.supabase_man = supabase.create_client(supabase_url,supabase_api_key)
+        
         
 
     def __predict__(self,text):
-       
+        import supabase
+        supabase_api_key = os.environ["supabase_api_key"]
+        print("using supabase: ",supabase_api_key)
+        self.supabase_man = supabase.create_client(self.supabase_url,supabase_api_key)
         active_url = text["url"]
         status,condensed = self.startFlow(active_url)
         return {
@@ -72,7 +75,7 @@ class BokxURL():
         print("Duration : " + str(duration))
         return duration
 
-    def youtubeDowload(self,youtube_link):
+    def youtubeDowload2(self,youtube_link):
         url = youtube_link
         resolution = "720p"
         include_audio = True
@@ -80,8 +83,48 @@ class BokxURL():
         output = youtube_to_mp4.run(url, resolution, include_audio)
         print(output)
         return output
+    
+    def youtubeDowload(self,youtube_link):
+        url = youtube_link
+        download_type = "video"
+        resolution = "highest-available"
+        include_audio = True
+        start_time = 0
+        end_time = -1
+        include_metadata = False
+        metadata_fields = ["title","thumbnail","description","tags","duration"]
+        include_subtitles = False
+        subtitle_languages = ["en"]
+        video_format = "mp4"
+        audio_format = "mp3"
+
+        youtube_downloader = sieve.function.get("sieve/youtube-downloader")
+        output = youtube_downloader.run(url, download_type, resolution, include_audio, start_time, end_time, include_metadata, metadata_fields, include_subtitles, subtitle_languages, video_format, audio_format)
+        print('This is printing while a job is running in the background!')
+        moutput = next(output)
+        return moutput
 
     def summerizeVid(self,vid_url):
+        file = sieve.File(url=vid_url)
+        backend = "gemini-1.5-flash"
+        prompt = "analyse any text in the video, use the texts to explain what is happening in the video in relation to the texts in the video."
+        fps = 1
+        audio_context = False
+        function_json = {
+        "type": "list",
+        "items": {
+            "type": "string",
+            "description": "explain the video in detail"
+        }
+        }
+        start_time = 0
+        end_time = -1
+        crop_coordinates = "-1, -1, -1, -1"
+
+        visual_qa = sieve.function.get("sieve/visual-qa")
+        output = visual_qa.run(file, backend, prompt, fps, audio_context, function_json, start_time, end_time, crop_coordinates)
+        return output[0]
+    def summerizeVid2(self,vid_url):
         video = sieve.File(url=vid_url)
         conciseness = "concise"
         visual_detail = "high"
@@ -152,6 +195,6 @@ class BokxURL():
             summerised = self.summerizeVid(public_url)
             file_name = "bokx"+file_path.split("/")[-1]
             self.supabase_man.storage.from_(id = self.bucket_name).remove(file_name)
-            return 200,summerised
+            return 200,{"target":master_url,"message":summerised["message"]}
         else:
-            return 500,"url error"
+            return 500,{"target":master_url,"message":"url error"}
